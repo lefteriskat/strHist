@@ -2,7 +2,6 @@ package gr.demokritos.iit.irss.semagrow.tools.expirementfixedprefix;
 
 import eu.semagrow.core.impl.plan.PlanVisitorBase;
 import eu.semagrow.core.plan.Plan;
-import gr.demokritos.iit.irss.semagrow.clustering.OpticsCluster;
 import gr.demokritos.iit.irss.semagrow.rdf.RDFCircleSTHolesHistogram;
 import gr.demokritos.iit.irss.semagrow.rdf.RDFSTHolesHistogram;
 import gr.demokritos.iit.irss.semagrow.tools.AnalysisMetrics;
@@ -30,7 +29,7 @@ import java.util.regex.Pattern;
  */
 public class Evaluate {
 
-    static final Logger logger = LoggerFactory.getLogger(Evaluate.class);
+    /*static final Logger logger = LoggerFactory.getLogger(Evaluate.class);
     static final OpenOption[] options = {StandardOpenOption.CREATE, StandardOpenOption.APPEND};
     private static String prefixes = "prefix dc: <http://purl.org/dc/terms/> prefix semagrow: <http://www.semagrow.eu/rdf/> ";
     private static Hashtable<String, Long> hashTable;
@@ -409,7 +408,7 @@ public class Evaluate {
         }
 
         return hashTable;
-    }
+    }*/
 
 
 

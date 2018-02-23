@@ -12,6 +12,7 @@ import gr.demokritos.iit.irss.semagrow.base.range.ExplicitSetRange;
 import gr.demokritos.iit.irss.semagrow.file.FileManager;
 import gr.demokritos.iit.irss.semagrow.file.ResultMaterializationManager;
 import eu.semagrow.querylog.QueryLogCollector;
+import eu.semagrow.querylog.api.QueryLogWriter;
 import gr.demokritos.iit.irss.semagrow.impl.serial.SerialQueryLogFactory;
 import gr.demokritos.iit.irss.semagrow.impl.serial.SerialQueryLogParser;
 import gr.demokritos.iit.irss.semagrow.qfr.QueryRecordAdapter;
@@ -45,6 +46,8 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFHandlerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import virtuoso.sesame2.driver.VirtuosoRepository;
+
 
 import java.io.*;
 import java.util.*;

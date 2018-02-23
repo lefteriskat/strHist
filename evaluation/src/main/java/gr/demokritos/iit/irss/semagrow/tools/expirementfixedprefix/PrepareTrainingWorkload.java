@@ -2,6 +2,10 @@ package gr.demokritos.iit.irss.semagrow.tools.expirementfixedprefix;
 
 import gr.demokritos.iit.irss.semagrow.sesame.QueryLogInterceptor;
 import gr.demokritos.iit.irss.semagrow.tools.Utils;
+import eu.semagrow.querylog.api.QueryLogException;
+import eu.semagrow.querylog.api.QueryLogHandler;
+import eu.semagrow.querylog.api.QueryLogWriter;
+
 import info.aduna.iteration.CloseableIteration;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -25,6 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.Random;
+
 
 /**
  * Created by nickozoulis on 10/11/2014.
@@ -64,7 +70,9 @@ public class PrepareTrainingWorkload {
     private static void executeExperiment() throws IOException, RepositoryException {
         executors = Executors.newCachedThreadPool();
 
-        interceptor = new QueryLogInterceptor(Utils.getHandler(), Utils.getMateralizationManager(executors));
+        QueryLogHandler handler = Utils.getHandler();
+        interceptor = new QueryLogInterceptor(handler, Utils.getMateralizationManager(executors));
+
 
         try {
             ((QueryLogWriter) handler).startQueryLog();
