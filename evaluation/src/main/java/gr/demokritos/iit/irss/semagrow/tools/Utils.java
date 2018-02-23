@@ -57,7 +57,10 @@ public class Utils {
 
     static final Logger logger = LoggerFactory.getLogger(Utils.class);
     private static Random rand = new Random(1);
-    private static final String prefixes = "prefix dc: <http://purl.org/dc/terms/> prefix semagrow: <http://www.semagrow.eu/rdf/> ";
+    private static final String PREFIXES = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" + 
+                                          "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" + 
+                                          "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" + 
+                                          "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n";
 
     public static Collection<QueryLogRecord> parseFeedbackLog(String path) {
         Collection<QueryLogRecord> logs = new LinkedList<QueryLogRecord>();
@@ -78,8 +81,9 @@ public class Utils {
         Collection<QueryRecord> queryRecords = new LinkedList<QueryRecord>();
         Iterator iter = logs.iterator();
 
-        while (iter.hasNext())
+        while (iter.hasNext()){
             queryRecords.add(new QueryRecordAdapter((QueryLogRecord)iter.next(), getMateralizationManager(executors)));
+        }
 
         return queryRecords;
     }
@@ -225,19 +229,13 @@ public class Utils {
     }
 
     public static Repository getRepository(String inputPath) throws RepositoryException, IOException {
-        Properties properties = new Properties();
+        
+        final String VIRTUOSO_INSTANCE = "localhost";
+        final int VIRTUOSO_PORT = 1111;
+        final String VIRTUOSO_USERNAME = "dba";
+        final String VIRTUOSO_PASSWORD = "dba";
 
-        File journal = new File(inputPath + "bigdata_agris_data_.jnl");
-
-        properties.setProperty(
-                BigdataSail.Options.FILE,
-                journal.getAbsolutePath()
-        );
-
-        // Instantiate a sail and a Sesame repository
-        BigdataSail sail = new BigdataSail(properties);
-        Repository repo = new BigdataSailRepository(sail);
-        repo.initialize();
+        Repository repo = new VirtuosoRepository("jdbc:virtuoso://" + VIRTUOSO_INSTANCE + ":" + VIRTUOSO_PORT, VIRTUOSO_USERNAME, VIRTUOSO_PASSWORD);
 
         return repo;
     }
@@ -275,7 +273,7 @@ public class Utils {
     }
 
     public static String trimSubject(String subject, int trimPos) {
-        String[] splits = subject.split("/");
+        String[] splits = subject.split(":");
         String lastSlashPrefix = splits[splits.length - 1];
 
         // Get random cut on the prefix. 3 is given to avoid memory heap overflow
@@ -284,7 +282,7 @@ public class Utils {
         String trimmedSubject = "";
         // Reform the trimmed subject. Intentionally exclude the last one.
         for (int i=0; i<splits.length - 1; i++) {
-            trimmedSubject += splits[i] + "/";
+            trimmedSubject += splits[i] + ":";
         }
 
         // Append the random cut.
@@ -366,15 +364,15 @@ public class Utils {
     }
 
     public static long countRepoTriples(RepositoryConnection conn) {
-        return countQueryRepo(conn, prefixes + "select * where {?sub dc:subject ?obj}");
+        return countQueryRepo(conn, PREFIXES + "select * where {?sub dc:subject ?obj}");
     }
 
     public static long countDistinctRepoSubjects(RepositoryConnection conn) {
-        return countQueryRepo(conn, prefixes + "select distinct ?sub where {?sub dc:subject ?obj}");
+        return countQueryRepo(conn, PREFIXES + "select distinct ?sub where {?sub dc:subject ?obj}");
     }
 
     public static long countDistinctRepoObjects(RepositoryConnection conn) {
-        return countQueryRepo(conn, prefixes + "select distinct ?obj where {?sub dc:subject ?obj}");
+        return countQueryRepo(conn, PREFIXES + "select distinct ?obj where {?sub dc:subject ?obj}");
     }
 
     private static long countQueryRepo(RepositoryConnection conn, String queryStr) {
@@ -402,7 +400,7 @@ public class Utils {
         Collections.sort(rows);
         List<String> listSubjects = new ArrayList<>();
 
-        String queryStr = prefixes + "select ?sub where {?sub dc:subject ?obj}";
+        String queryStr = PREFIXES + "select ?sub where {?sub dc:subject ?obj}";
         TupleQuery query;
         TupleQueryResult res;
         long c = 0;

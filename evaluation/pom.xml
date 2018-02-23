@@ -57,6 +57,16 @@
           <artifactId>commons-collections</artifactId>
           <version>3.2.1</version>
       </dependency>
+      <dependency>
+          <groupId>custom</groupId>
+          <artifactId>virtjdbc4</artifactId>
+          <version>1</version>
+      </dependency>
+       <dependency>
+          <groupId>custom</groupId>
+          <artifactId>virt_sesame2</artifactId>
+          <version>1</version>
+      </dependency>
 
   </dependencies>
 

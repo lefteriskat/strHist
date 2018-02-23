@@ -58,10 +58,10 @@ public class SerialQueryLogRecord implements Serializable, QueryLogRecord {
 
         ParsedTupleQuery q = QueryParserUtil.parseTupleQuery(QueryLanguage.SPARQL,
                                                             (String)in.readObject(),
-                                                            "http://example.org/");
+                                                            "http://dbpedia.org/");
         TupleExpr query = q.getTupleExpr();
 
-        this.queryLogRecord = new QueryLogRecordImpl(uuid, endpoint, query.toString(), bindings, bindingNames);
+        this.queryLogRecord = new QueryLogRecordImpl(uuid, endpoint, query, bindings, bindingNames);
         this.queryLogRecord.setCardinality(cardinality);
         this.queryLogRecord.setDuration(startTime.getTime(), endTime.getTime());
         this.queryLogRecord.setResults(results);
