@@ -1,17 +1,22 @@
 package gr.demokritos.iit.irss.semagrow.tools.expirementfixedprefix;
 
-import gr.demokritos.iit.irss.semagrow.sesame.QueryLogInterceptor;
-import gr.demokritos.iit.irss.semagrow.tools.Utils;
-import eu.semagrow.querylog.api.QueryLogException;
-import eu.semagrow.querylog.api.QueryLogHandler;
-import eu.semagrow.querylog.api.QueryLogWriter;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import info.aduna.iteration.CloseableIteration;
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.query.*;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQuery;
 import org.openrdf.query.algebra.TupleExpr;
 import org.openrdf.query.parser.ParsedTupleQuery;
 import org.openrdf.query.parser.QueryParserUtil;
@@ -21,15 +26,14 @@ import org.openrdf.repository.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.Random;
+import eu.semagrow.querylog.api.QueryLogException;
+import eu.semagrow.querylog.api.QueryLogHandler;
+import eu.semagrow.querylog.api.QueryLogWriter;
+import gr.demokritos.iit.irss.semagrow.sesame.QueryLogInterceptor;
+import gr.demokritos.iit.irss.semagrow.tools.Utils;
+import info.aduna.iteration.CloseableIteration;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 
 
 /**
@@ -47,19 +51,21 @@ public class PrepareTrainingWorkload {
     private static ExecutorService executors;
 
     // Setup Parameters
-    private static String inputPath;
+    private static String dbpediaVersion;
     private static int numOfQueries;
     // Sparql query to be evaluated
-    private static String query = PREFIXES + "SELECT *  WHERE {?s skos:subject ?category. FILTER regex(str(?category), \"^%s\")}";
+    private static String query;
 
     public static void main(String[] args) throws IOException, RepositoryException {
-        OptionParser parser = new OptionParser("i:b:");
+        OptionParser parser = new OptionParser("v:b:");
         OptionSet options = parser.parse(args);
 
-        if (options.hasArgument("i") && options.hasArgument("b")) {
-            inputPath = options.valueOf("i").toString();
+        if (options.hasArgument("v") && options.hasArgument("b")) {
+            dbpediaVersion = options.valueOf("v").toString();
             numOfQueries = Integer.parseInt(options.valueOf("b").toString());
 
+            query = PREFIXES + "SELECT * FROM <http://dbpedia" +dbpediaVersion+ ".org> WHERE {?s skos:subject ?category. FILTER regex(str(?category), \"^%s\")}";
+            
             executeExperiment();
         } else {
             logger.error("Invalid arguments");
@@ -80,7 +86,7 @@ public class PrepareTrainingWorkload {
             e.printStackTrace();
         }
         
-        queryStore(Utils.getRepository(inputPath));
+        queryStore(Utils.getRepository(dbpediaVersion));
         
         try {
             ((QueryLogWriter) handler).endQueryLog();
