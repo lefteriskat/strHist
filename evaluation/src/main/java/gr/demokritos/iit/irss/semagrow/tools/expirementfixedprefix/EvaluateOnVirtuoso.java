@@ -1,12 +1,7 @@
 package gr.demokritos.iit.irss.semagrow.tools.expirementfixedprefix;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -29,19 +24,15 @@ import org.slf4j.LoggerFactory;
 import eu.semagrow.querylog.api.QueryLogException;
 import eu.semagrow.querylog.api.QueryLogHandler;
 import eu.semagrow.querylog.api.QueryLogWriter;
+import gr.demokritos.iit.irss.semagrow.rdf.RDFSTHolesHistogram;
 import gr.demokritos.iit.irss.semagrow.sesame.QueryLogInterceptor;
 import gr.demokritos.iit.irss.semagrow.tools.Utils;
 import info.aduna.iteration.CloseableIteration;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
-
-/**
- * Created by nickozoulis on 10/11/2014.
- */
-public class PrepareTrainingWorkload {
-
-    static final Logger logger = LoggerFactory.getLogger(PrepareTrainingWorkload.class);
+public class EvaluateOnVirtuoso {
+	static final Logger logger = LoggerFactory.getLogger(EvaluateOnVirtuoso.class);
     private static URI endpoint = ValueFactoryImpl.getInstance().createURI("http://dbpedia.org");
     private static String PREFIXES = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" + 
                                       "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" + 
@@ -57,14 +48,14 @@ public class PrepareTrainingWorkload {
     private static String query;
 
     public static void main(String[] args) throws IOException, RepositoryException {
-        OptionParser parser = new OptionParser("v:b:");
+        OptionParser parser = new OptionParser("v:n:");
         OptionSet options = parser.parse(args);
 
-        if (options.hasArgument("v") && options.hasArgument("b")) {
+        if (options.hasArgument("v") && options.hasArgument("n")) {
             dbpediaVersion = options.valueOf("v").toString();
-            numOfQueries = Integer.parseInt(options.valueOf("b").toString());
+            numOfQueries = Integer.parseInt(options.valueOf("n").toString());
 
-            query = PREFIXES + "SELECT * FROM <http://dbpedia" +dbpediaVersion+ ".org> WHERE {?s skos:subject ?category. FILTER regex(str(?category), \"^%s\")}";
+            query = PREFIXES + "SELECT * FROM <http://dbpedia" +dbpediaVersion+ ".org> WHERE {?s skos:subject <%s> .}";
             
             executeExperiment();
         } else {
@@ -76,62 +67,39 @@ public class PrepareTrainingWorkload {
     private static void executeExperiment() throws IOException, RepositoryException {
         executors = Executors.newCachedThreadPool();
 
-        QueryLogHandler handler = Utils.getHandler();
-        interceptor = new QueryLogInterceptor(handler, Utils.getMateralizationManager(executors));
-
-
-        try {
-            ((QueryLogWriter) handler).startQueryLog();
-        } catch (QueryLogException e) {
-            e.printStackTrace();
-        }
         
-        queryStore(Utils.getRepository(dbpediaVersion));
+        RDFSTHolesHistogram histogram = Utils.loadCurrentHistogram("/var/tmp/");
         
-        try {
-            ((QueryLogWriter) handler).endQueryLog();
-        } catch (QueryLogException e) {
-            e.printStackTrace();
-        }
+
+        evaluate(Utils.getRepository(dbpediaVersion),histogram);
+        
+       
 
         executors.shutdown();
     }
 
-    private static void queryStore(Repository repo) throws IOException, RepositoryException {
+    private static void evaluate(Repository repo,RDFSTHolesHistogram histogram) throws IOException, RepositoryException {
         List<String> subjects = Utils.loadRandomCategories("/var/tmp/log.txt",numOfQueries);
-
-        logger.info("Starting querying triple store: ");
+        Long estimation,actual;
+        logger.info("Starting evaluating triple store: ");
         RepositoryConnection conn;
 
-        int trimPos = 2;
-        String trimmedSubject;
-
+       
         for (int j=0; j<subjects.size(); j++) {
             logger.info("Query No: " + j);
             try {
                 conn = repo.getConnection();
 
-                // This line controls the rate of how fast the querying prefixes should expand.
-                // For example if batch is 100 queries, then with {j mod 25} we would end up with 4 different
-                // prefix depths.
-                if (j % 25 == 0) trimPos++;
-
-                trimmedSubject = Utils.trimSubject(subjects.get(j), trimPos);
-                String q = String.format(query, trimmedSubject);
-                TupleQuery tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, q);
+          
+                String q = String.format(query, subjects.get(j));
+              
                 logger.info("Query: " + q);
 
-                // Get TupleExpr
-                ParsedTupleQuery psq = QueryParserUtil.parseTupleQuery(QueryLanguage.SPARQL, q, "http://example.org/");
-                TupleExpr tupleExpr = psq.getTupleExpr();
-
-                // Intercepts the query results.
-                CloseableIteration<BindingSet, QueryEvaluationException> result =
-                        interceptor.afterExecution(endpoint, tupleExpr, tupleQuery.getBindings(), tupleQuery.evaluate());
-                Utils.consumeIteration(result);
-
+                estimation = Utils.evaluateOnHistogram(histogram, q);
+                actual = Utils.evaluateOnTripleStore(conn, q);
+                System.out.println("Actual = "+actual +" Estimation = "+estimation);
                 conn.close();
-            } catch (MalformedQueryException | RepositoryException | QueryEvaluationException mqe) {
+            } catch (RepositoryException mqe) {
                 mqe.printStackTrace();
             }
         }
@@ -139,7 +107,4 @@ public class PrepareTrainingWorkload {
         repo.shutDown();
     }
 
-   
-
 }
-

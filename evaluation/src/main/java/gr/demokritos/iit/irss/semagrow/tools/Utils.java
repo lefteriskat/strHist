@@ -306,10 +306,10 @@ public class Utils {
     }
 
 
-    public static long evaluateOnHistogram(RepositoryConnection conn, RDFSTHolesHistogram histogram, String query) {
+    public static long evaluateOnHistogram(RDFSTHolesHistogram histogram, String query) {
         try {
             logger.info("Cardinality estimation on Histogram for query: " + query);
-            ParsedTupleQuery q = QueryParserUtil.parseTupleQuery(QueryLanguage.SPARQL, query, "http://purl.org/dc/terms/");
+            ParsedTupleQuery q = QueryParserUtil.parseTupleQuery(QueryLanguage.SPARQL, query, "http://dbpedia.org");
 
             long card = new CardinalityEstimatorImpl(histogram).
                     getCardinality(q.getTupleExpr(), EmptyBindingSet.getInstance());
@@ -325,7 +325,7 @@ public class Utils {
     public static long evaluateOnHistogram1(RDFSTHolesHistogram histogram, String query) {
         try {
             logger.info("Cardinality estimation on Histogram for query: " + query);
-            ParsedTupleQuery q = QueryParserUtil.parseTupleQuery(QueryLanguage.SPARQL, query, "http://agris.fao.org/aos/records/");
+            ParsedTupleQuery q = QueryParserUtil.parseTupleQuery(QueryLanguage.SPARQL, query, "http://dbpedia.org");
 
             long card = new CardinalityEstimatorImpl(histogram).
                     getCardinality(q.getTupleExpr(), EmptyBindingSet.getInstance());
@@ -341,7 +341,7 @@ public class Utils {
     public static long evaluateOnTripleStore(RepositoryConnection conn, String query) {
         try {
             logger.info("Cardinality estimation on Triple Store for query: " + query);
-            ParsedTupleQuery q = QueryParserUtil.parseTupleQuery(QueryLanguage.SPARQL, query, "http://example.org/");
+            ParsedTupleQuery q = QueryParserUtil.parseTupleQuery(QueryLanguage.SPARQL, query, "http://dbpedia.org");
 
             long card = new ActualCardinalityEstimator(conn).
                     getCardinality(q.getTupleExpr(), EmptyBindingSet.getInstance());
@@ -428,6 +428,41 @@ public class Utils {
         } catch (Exception e) {e.printStackTrace();}
 
         return listSubjects;
+    }
+    
+    /**
+     * Loads random distinct repo categories, from which the training workload will be created.
+     * @return
+     */
+    public static List<String> loadRandomCategories(String path,Integer queryLogSize) {
+        ArrayList<String> list = new ArrayList<String>();
+        Random rand = new Random(); 
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(path));
+            String line = "";
+            Integer i=0,j;
+            while ((line = br.readLine()) != null) {
+                if(i < queryLogSize) {
+                    list.add(line.trim());
+                }
+                else {
+                    j=rand.nextInt(i+1); //rand(0,i)
+                    
+                    if(j< queryLogSize) {
+                        list.set(j,line.trim());
+                    }
+                }
+                
+                i++;
+            }
+            br.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return list;
     }
 
 }
