@@ -1,6 +1,8 @@
 package gr.demokritos.iit.irss.semagrow.tools.expirementfixedprefix;
 
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -68,7 +70,7 @@ public class EvaluateOnVirtuoso {
         executors = Executors.newCachedThreadPool();
 
         
-        RDFSTHolesHistogram histogram = Utils.loadCurrentHistogram("/var/tmp/");
+        RDFSTHolesHistogram histogram = Utils.loadCurrentHistogram("/var/tmp/strHist/");
         
 
         evaluate(Utils.getRepository(dbpediaVersion),histogram);
@@ -84,7 +86,9 @@ public class EvaluateOnVirtuoso {
         logger.info("Starting evaluating triple store: ");
         RepositoryConnection conn;
 
-       
+        FileWriter fileWriter = new FileWriter("/var/tmp/strHist/results"+dbpediaVersion+".txt");
+        PrintWriter printWriter = new PrintWriter(fileWriter);
+        printWriter.println("Actual\tEstimation");
         for (int j=0; j<subjects.size(); j++) {
             logger.info("Query No: " + j);
             try {
@@ -92,18 +96,18 @@ public class EvaluateOnVirtuoso {
 
           
                 String q = String.format(query, subjects.get(j));
-              
-                logger.info("Query: " + q);
 
                 estimation = Utils.evaluateOnHistogram(histogram, q);
                 actual = Utils.evaluateOnTripleStore(conn, q);
-                System.out.println("Actual = "+actual +" Estimation = "+estimation);
+                
+                printWriter.println(actual +"\t"+estimation);
+                
                 conn.close();
             } catch (RepositoryException mqe) {
                 mqe.printStackTrace();
             }
         }
-
+        printWriter.close();
         repo.shutDown();
     }
 

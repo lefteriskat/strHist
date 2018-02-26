@@ -52,18 +52,18 @@ public class PrepareTrainingWorkload {
 
     // Setup Parameters
     private static String dbpediaVersion;
-    private static int numOfQueries;
+    private static int numOfQueries,logNum;
     // Sparql query to be evaluated
     private static String query;
 
     public static void main(String[] args) throws IOException, RepositoryException {
-        OptionParser parser = new OptionParser("v:b:");
+        OptionParser parser = new OptionParser("v:b:l:");
         OptionSet options = parser.parse(args);
 
-        if (options.hasArgument("v") && options.hasArgument("b")) {
+        if (options.hasArgument("v") && options.hasArgument("b") && options.hasArgument("l")) {
             dbpediaVersion = options.valueOf("v").toString();
             numOfQueries = Integer.parseInt(options.valueOf("b").toString());
-
+            logNum = Integer.parseInt(options.valueOf("l").toString());
             query = PREFIXES + "SELECT * FROM <http://dbpedia" +dbpediaVersion+ ".org> WHERE {?s skos:subject ?category. FILTER regex(str(?s), \"^%s\")}";
             
             executeExperiment();
@@ -76,7 +76,7 @@ public class PrepareTrainingWorkload {
     private static void executeExperiment() throws IOException, RepositoryException {
         executors = Executors.newCachedThreadPool();
 
-        QueryLogHandler handler = Utils.getHandler();
+        QueryLogHandler handler = Utils.getHandler(numOfQueries,dbpediaVersion,logNum);
         interceptor = new QueryLogInterceptor(handler, Utils.getMateralizationManager(executors));
 
 
@@ -103,7 +103,7 @@ public class PrepareTrainingWorkload {
         logger.info("Starting querying triple store: ");
         RepositoryConnection conn;
 
-        int trimPos = 3;
+        int trimPos = 2;
         String trimmedSubject;
 
         for (int j=0; j<subjects.size(); j++) {

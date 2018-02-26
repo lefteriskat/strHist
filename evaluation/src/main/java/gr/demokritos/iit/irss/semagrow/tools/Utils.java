@@ -214,16 +214,16 @@ public class Utils {
         return new FileManager(baseDir, writerFactory, executors);
     }
 
-    public static QueryLogHandler getHandler() {
+    public static QueryLogHandler getHandler(Integer numOfQueries,String dbpediaVersion,Integer logNum) {
         QueryLogHandler handler = null;
         SerialQueryLogFactory factory = new SerialQueryLogFactory();
 
         try {
-            File dir = new File("/var/tmp/");
+            File dir = new File("/var/tmp/strHist");
             if (!dir.exists())
                 dir.mkdir();
 
-            File qfrLog = new File("/var/tmp/_log.ser");
+            File qfrLog = new File("/var/tmp/strHist/"+logNum+"."+numOfQueries+"_log_dbpedia_version_"+dbpediaVersion+".ser");
             OutputStream out = new FileOutputStream(qfrLog, true);
             handler = factory.getQueryRecordLogger(out);
         } catch (IOException e) {e.printStackTrace();}

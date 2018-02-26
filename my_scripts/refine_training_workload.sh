@@ -14,7 +14,7 @@ ALL_JARS+=$DEPENDENCY_PATH
 while [ $counter -le 2 ]
 do
 echo $counter
-java -Dlog4j.configuration=file:${LOG4J_PATH}/log4j.properties -cp $ALL_JARS gr.demokritos.iit.irss.semagrow.tools.expirementfixedprefix.PrepareTrainingWorkload -b 50 -v 3.2 -l $counter
+java -Dlog4j.configuration=file:${LOG4J_PATH}/log4j.properties -cp $ALL_JARS gr.demokritos.iit.irss.semagrow.tools.expirementfixedprefix.RefineTrainingWorkload -b 50 -v 3.2 -l $counter -o /var/tmp/strHist/
 ((counter++))
 done
 echo All done

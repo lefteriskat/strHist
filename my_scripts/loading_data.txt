@@ -1,0 +1,9 @@
+LOADING DATA
+
+ld_dir('/home/lefteris/Downloads/datasets3.2','*.nt.gz','http://dbpedia3.2.org');
+ld_dir('/home/lefteris/Downloads/datasets3.3','*.nt.gz','http://dbpedia3.3.org');
+rdf_loader_run();
+
+DROPING A GRAPH
+
+sparql DROP SILENT GRAPH <http://dbpedia3.2.org>;

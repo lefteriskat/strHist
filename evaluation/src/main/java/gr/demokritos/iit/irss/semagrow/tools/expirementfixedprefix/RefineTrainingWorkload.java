@@ -25,14 +25,18 @@ public class RefineTrainingWorkload {
 
     // Setup Parameters
     private static String outputPath;
+    private static String dbpediaVersion;
+    private static int numOfQueries,logNum;
 
     public static void main(String[] args) {
-        OptionParser parser = new OptionParser("o:");
+        OptionParser parser = new OptionParser("o:b:v:l:");
         OptionSet options = parser.parse(args);
 
         if (options.hasArgument("o")) {
             outputPath = options.valueOf("o").toString();
-
+            dbpediaVersion = options.valueOf("v").toString();
+            numOfQueries = Integer.parseInt(options.valueOf("b").toString());
+            logNum = Integer.parseInt(options.valueOf("l").toString());
             execute();
         } else {
             logger.error("Invalid arguments");
@@ -48,7 +52,7 @@ public class RefineTrainingWorkload {
 
     private static void refine() {
         // Load Feedback
-        Collection<QueryLogRecord> logs = Utils.parseFeedbackLog("/var/tmp/_log.ser");
+        Collection<QueryLogRecord> logs = Utils.parseFeedbackLog("/var/tmp/strHist/"+logNum+"."+numOfQueries+"_log_dbpedia_version_"+dbpediaVersion+".ser");
         Collection<QueryRecord> queryRecords = Utils.adaptLogs(logs, executors);
 
         logger.info("Starting refining histogram: ");
