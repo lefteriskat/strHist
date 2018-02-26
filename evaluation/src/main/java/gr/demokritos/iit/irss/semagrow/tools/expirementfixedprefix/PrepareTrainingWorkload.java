@@ -64,7 +64,7 @@ public class PrepareTrainingWorkload {
             dbpediaVersion = options.valueOf("v").toString();
             numOfQueries = Integer.parseInt(options.valueOf("b").toString());
 
-            query = PREFIXES + "SELECT * FROM <http://dbpedia" +dbpediaVersion+ ".org> WHERE {?s skos:subject ?category. FILTER regex(str(?category), \"^%s\")}";
+            query = PREFIXES + "SELECT * FROM <http://dbpedia" +dbpediaVersion+ ".org> WHERE {?s skos:subject ?category. FILTER regex(str(?s), \"^%s\")}";
             
             executeExperiment();
         } else {
@@ -98,12 +98,12 @@ public class PrepareTrainingWorkload {
     }
 
     private static void queryStore(Repository repo) throws IOException, RepositoryException {
-        List<String> subjects = Utils.loadRandomCategories("/var/tmp/log.txt",numOfQueries);
+        List<String> subjects = Utils.loadRandomCategories("/var/tmp/log2.txt",numOfQueries);
 
         logger.info("Starting querying triple store: ");
         RepositoryConnection conn;
 
-        int trimPos = 2;
+        int trimPos = 3;
         String trimmedSubject;
 
         for (int j=0; j<subjects.size(); j++) {
@@ -122,7 +122,7 @@ public class PrepareTrainingWorkload {
                 logger.info("Query: " + q);
 
                 // Get TupleExpr
-                ParsedTupleQuery psq = QueryParserUtil.parseTupleQuery(QueryLanguage.SPARQL, q, "http://example.org/");
+                ParsedTupleQuery psq = QueryParserUtil.parseTupleQuery(QueryLanguage.SPARQL, q, "http://dbpedia.org/");
                 TupleExpr tupleExpr = psq.getTupleExpr();
 
                 // Intercepts the query results.

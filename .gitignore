@@ -6,5 +6,6 @@
 .project
 .settings/*
 .idea/*
-
+*.settings
+*.classpath
 /bin

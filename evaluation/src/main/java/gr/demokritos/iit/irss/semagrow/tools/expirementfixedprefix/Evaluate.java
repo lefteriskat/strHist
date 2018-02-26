@@ -2,6 +2,7 @@ package gr.demokritos.iit.irss.semagrow.tools.expirementfixedprefix;
 
 import eu.semagrow.core.impl.plan.PlanVisitorBase;
 import eu.semagrow.core.plan.Plan;
+import gr.demokritos.iit.irss.semagrow.api.STHistogram;
 import gr.demokritos.iit.irss.semagrow.rdf.RDFCircleSTHolesHistogram;
 import gr.demokritos.iit.irss.semagrow.rdf.RDFSTHolesHistogram;
 import gr.demokritos.iit.irss.semagrow.tools.AnalysisMetrics;
@@ -20,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,25 +31,31 @@ import java.util.regex.Pattern;
  */
 public class Evaluate {
 
-    /*static final Logger logger = LoggerFactory.getLogger(Evaluate.class);
+    static final Logger logger = LoggerFactory.getLogger(Evaluate.class);
     static final OpenOption[] options = {StandardOpenOption.CREATE, StandardOpenOption.APPEND};
-    private static String prefixes = "prefix dc: <http://purl.org/dc/terms/> prefix semagrow: <http://www.semagrow.eu/rdf/> ";
+    private static String PREFIXES = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" + 
+            "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" + 
+            "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" + 
+            "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>\n";
     private static Hashtable<String, Long> hashTable;
     private AnalysisMetrics metrics = new AnalysisMetrics();
 
     // Setup Parameters
     private static final String DISTINCTPath = "/var/tmp/distinct/";
-    private static String inputPath, outputPath;
+    private static String inputPath, outputPath,dbpediaVersion;
+    private static Integer numOfQueries;
 
 
     public static void main(String[] args) throws IOException, RepositoryException {
-        OptionParser parser = new OptionParser("i:o:");
+        OptionParser parser = new OptionParser("i:o:v:n:");
         OptionSet options = parser.parse(args);
 
-        if (options.hasArgument("i") && options.hasArgument("o")) {
+        if (options.hasArgument("i") && options.hasArgument("o") 
+         && options.hasArgument("v") && options.hasArgument("n")) {
             inputPath = options.valueOf("i").toString();
             outputPath = options.valueOf("o").toString();
-
+            dbpediaVersion = options.valueOf("v").toString();
+            numOfQueries = Integer.parseInt(options.valueOf("n").toString());
             //executeExperiment();
             Evaluate ev = new Evaluate();
             ev.executeQuery();
@@ -69,8 +77,8 @@ public class Evaluate {
         BufferedWriter bw = Files.newBufferedWriter(path, StandardCharsets.UTF_8, options);
         bw.write("Prefix, Actual, Est, AbsErr%\n\n");
 
-        RDFCircleSTHolesHistogram histogram = loadCircleHistogram(1);
-
+        RDFSTHolesHistogram histogram = loadHistogram(1);
+       
         // Evaluate a point query on histogram and triple store.
         evaluateWithSampleTestQueries1(histogram, bw, 0.01);
 
@@ -94,8 +102,8 @@ public class Evaluate {
             BufferedWriter bw = Files.newBufferedWriter(path, StandardCharsets.UTF_8, options);
             bw.write("Year, Prefix, Act, Est, AbsErr%\n\n");
 
-            //RDFSTHolesHistogram histogram = loadHistogram(1);
-            RDFCircleSTHolesHistogram histogram = loadCircleHistogram(1);
+            RDFSTHolesHistogram histogram = loadHistogram(1);
+            //RDFCircleSTHolesHistogram histogram = loadCircleHistogram(1);
 
             // Evaluate a point query on histogram and triple store.
             evaluateWithSampleTestQueries1(histogram, bw, 0.01);
@@ -121,16 +129,16 @@ public class Evaluate {
         return histogram;
     }
 
-    private static RDFCircleSTHolesHistogram loadCircleHistogram(int iteration) {
-        RDFCircleSTHolesHistogram histogram;
-
-        if (iteration == 0)
-            histogram = Utils.loadPreviousCircleHistogram(outputPath);
-        else
-            histogram = Utils.loadCurrentCircleHistogram(outputPath);
-
-        return histogram;
-    }
+//    private static RDFCircleSTHolesHistogram loadCircleHistogram(int iteration) {
+//        RDFCircleSTHolesHistogram histogram;
+//
+//        if (iteration == 0)
+//            histogram = Utils.loadPreviousCircleHistogram(outputPath);
+//        else
+//            histogram = Utils.loadCurrentCircleHistogram(outputPath);
+//
+//        return histogram;
+//    }
 
     private static void evaluateWithSampleTestQueries(RepositoryConnection conn,
                                                       RDFSTHolesHistogram histogram,
@@ -148,7 +156,7 @@ public class Evaluate {
                 Integer i = (Integer) iter.next();
                 String subject = Utils.loadDistinctSubject(i, DISTINCTPath);
 
-                testQuery = prefixes + " select * where {<%s> dc:subject ?o}";
+                testQuery = PREFIXES + " select * where {<%s> dc:subject ?o}";
                 testQuery = String.format(testQuery, subject);
 
                 evaluateTestQuery(conn, histogram, testQuery, bw);
@@ -164,69 +172,81 @@ public class Evaluate {
         }
     }
 
-    private void evaluateWithSampleTestQueries1(RDFCircleSTHolesHistogram histogram,
+    private void evaluateWithSampleTestQueries1(STHistogram histogram,
                                                 BufferedWriter bw,
                                                 double percentage) {
 
         logger.info("Executing test queries: ");
 
         String testQuery;
-        QueryEvaluatorStructure actualEval, histEval;
+        QueryEvaluatorStructure actualEval=null, histEval=null;
 
-        BufferedReader in = null;
-        try {
-            in = new BufferedReader(new FileReader("/home/katerina/logs/testLogS"));
+        List<String> categories = Utils.loadRandomCategories("/var/tmp/log.txt",numOfQueries);
+       
+        ActualQueryExecutor actual = new ActualQueryExecutor("histVOID.ttl");
+        actual.startConnection();
 
-            ActualQueryExecutor actual = new ActualQueryExecutor("repository.ttl");
-            actual.startConnection();
+        ActualQueryExecutor hist = new ActualQueryExecutor("histVOID.ttl");
+        hist.startConnection();
+        String category;
 
-            ActualQueryExecutor hist = new ActualQueryExecutor("repository_hist.ttl");
-            hist.startConnection();
-            String line;
+        for(int i=0;i<numOfQueries;i++){
+        	category = categories.get(i);
+            testQuery = PREFIXES + "SELECT * FROM <http://dbpedia" +dbpediaVersion+ ".org> WHERE {?s skos:subject "+category+".}";
+           // System.out.println("Run normally.... ");
+            try {
+				actualEval = actual.runSemagrowTest(testQuery, metrics);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+            //System.out.println("Results = " + actualEval.getResultCount() + "\n -------------------------------------------------- \n");
 
-            while ((line = in.readLine()) != null) {
-                testQuery = "select ?o where { " + line + " <http://purl.org/dc/terms/subject> ?o . }";
+            //System.out.println("Run hist evaluation.... ");
+            try {
+				histEval = hist.runSemagrowTest(testQuery, metrics);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+            //System.out.println("\n -------------------------------------------------- \n");
 
-               // System.out.println("Run normally.... ");
-                actualEval = actual.runSemagrowTest(testQuery, metrics);
-                //System.out.println("Results = " + actualEval.getResultCount() + "\n -------------------------------------------------- \n");
+            evaluateTestQuery1((RDFSTHolesHistogram)histogram, testQuery, actualEval.getResultCount(), bw);
+            //evaluateTestCircleQuery(histogram, testQuery, actualEval.getResultCount(), bw);
 
-                //System.out.println("Run hist evaluation.... ");
-                histEval = hist.runSemagrowTest(testQuery, metrics);
-                //System.out.println("\n -------------------------------------------------- \n");
+            metrics.setActual_execution_time(actualEval.getTime());
+            metrics.setEstimate_execution_time(histEval.getTime());
+            metrics.setActual_results(actualEval.getResultCount());
 
-                //evaluateTestQuery1(histogram, testQuery, actualEval.getResultCount(), bw);
-                evaluateTestCircleQuery(histogram, testQuery, actualEval.getResultCount(), bw);
+            evaluateQuery(actualEval, histEval);
 
-                metrics.setActual_execution_time(actualEval.getTime());
-                metrics.setEstimate_execution_time(histEval.getTime());
-                metrics.setActual_results(actualEval.getResultCount());
-
-                evaluateQuery(actualEval, histEval);
-
-                System.out.println(metrics.toString());
+            System.out.println(metrics.toString());
 
 
-                try {
-                    bw.write("\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                metrics.initialize();
-
+            try {
+                bw.write("\n");
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            actual.closeConnection();
-            actual.shutdown();
+            metrics.initialize();
 
-            hist.closeConnection();
-            hist.shutdown();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+        actual.closeConnection();
+        try {
+			actual.shutdown();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+        hist.closeConnection();
+        try {
+			hist.shutdown();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+       
     }
 
     private void evaluateQuery(QueryEvaluatorStructure actualEval, QueryEvaluatorStructure histEval) {
@@ -315,7 +335,7 @@ public class Evaluate {
 
     }
 
-    private void evaluateTestCircleQuery(RDFCircleSTHolesHistogram histogram,
+    /*private void evaluateTestCircleQuery(RDFCircleSTHolesHistogram histogram,
                                     String testQuery, long actualResults, BufferedWriter bw) {
         String prefix = getPrefix(testQuery);
 
@@ -345,14 +365,14 @@ public class Evaluate {
         //System.out.println("\n ************************************** \n");
 
 
-    }
+    }*/
 
     private static void evaluateTestQuery(RepositoryConnection conn, RDFSTHolesHistogram histogram,
                                           String testQuery, BufferedWriter bw) {
         String prefix = getPrefix(testQuery);
 
         long actual = hashTable.get(prefix);
-        long estimate = Utils.evaluateOnHistogram(conn, histogram, testQuery);
+        long estimate = Utils.evaluateOnHistogram(histogram, testQuery);
         long error;
 
         if (actual == 0 && estimate == 0)
@@ -374,8 +394,8 @@ public class Evaluate {
         Matcher m = r.matcher(testQuery);
 
         while (m.find()) {
-            if (m.group(0).contains("http://agris.fao.org/aos/records/")) {
-                String[] splits = m.group(1).split("/");
+            if (m.group(0).contains("http://dbpedia.org/resource/Category:")) {
+                String[] splits = m.group(1).split(":");
                 return splits[splits.length - 1];
             }
         }
@@ -408,7 +428,7 @@ public class Evaluate {
         }
 
         return hashTable;
-    }*/
+    }
 
 
 

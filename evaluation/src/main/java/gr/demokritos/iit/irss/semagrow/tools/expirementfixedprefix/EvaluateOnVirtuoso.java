@@ -55,7 +55,7 @@ public class EvaluateOnVirtuoso {
             dbpediaVersion = options.valueOf("v").toString();
             numOfQueries = Integer.parseInt(options.valueOf("n").toString());
 
-            query = PREFIXES + "SELECT * FROM <http://dbpedia" +dbpediaVersion+ ".org> WHERE {?s skos:subject <%s> .}";
+            query = PREFIXES + "SELECT ?category FROM <http://dbpedia" +dbpediaVersion+ ".org> WHERE {<%s> skos:subject ?category .}";
             
             executeExperiment();
         } else {
@@ -79,7 +79,7 @@ public class EvaluateOnVirtuoso {
     }
 
     private static void evaluate(Repository repo,RDFSTHolesHistogram histogram) throws IOException, RepositoryException {
-        List<String> subjects = Utils.loadRandomCategories("/var/tmp/log.txt",numOfQueries);
+        List<String> subjects = Utils.loadRandomCategories("/var/tmp/log2.txt",numOfQueries);
         Long estimation,actual;
         logger.info("Starting evaluating triple store: ");
         RepositoryConnection conn;

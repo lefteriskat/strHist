@@ -276,7 +276,7 @@ public class Utils {
     }
 
     public static String trimSubject(String subject, int trimPos) {
-        String[] splits = subject.split(":");
+        String[] splits = subject.split("/");
         String lastSlashPrefix = splits[splits.length - 1];
 
         // Get random cut on the prefix. 3 is given to avoid memory heap overflow
@@ -285,7 +285,7 @@ public class Utils {
         String trimmedSubject = "";
         // Reform the trimmed subject. Intentionally exclude the last one.
         for (int i=0; i<splits.length - 1; i++) {
-            trimmedSubject += splits[i] + ":";
+            trimmedSubject += splits[i] + "/";
         }
 
         // Append the random cut.

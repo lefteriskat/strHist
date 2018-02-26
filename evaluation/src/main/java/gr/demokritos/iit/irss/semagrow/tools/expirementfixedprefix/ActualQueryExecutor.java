@@ -49,8 +49,9 @@ public class ActualQueryExecutor {
             e.printStackTrace();
         }
     }
-
-
+//////////////////////////////////////////////////////
+//Constructor->initRepo()->getConfig()->parseConfig(); edw ginetai to initialize..prp na to alla3w pros to parwn apo semagrow se 
+//////////////////////////////////////////////////////
     private void initRepo() throws RepositoryConfigException, RepositoryException {
         SemagrowRepositoryConfig config = getConfig();
         RepositoryFactory repoFactory = RepositoryRegistry.getInstance().get(config.getType());
