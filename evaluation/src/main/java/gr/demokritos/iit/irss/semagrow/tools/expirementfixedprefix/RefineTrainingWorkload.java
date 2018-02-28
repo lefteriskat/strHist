@@ -29,13 +29,12 @@ public class RefineTrainingWorkload {
     private static int numOfQueries,logNum;
 
     public static void main(String[] args) {
-        OptionParser parser = new OptionParser("o:b:v:l:");
+        OptionParser parser = new OptionParser("o:v:l:");
         OptionSet options = parser.parse(args);
 
         if (options.hasArgument("o")) {
             outputPath = options.valueOf("o").toString();
             dbpediaVersion = options.valueOf("v").toString();
-            numOfQueries = Integer.parseInt(options.valueOf("b").toString());
             logNum = Integer.parseInt(options.valueOf("l").toString());
             execute();
         } else {
@@ -52,7 +51,7 @@ public class RefineTrainingWorkload {
 
     private static void refine() {
         // Load Feedback
-        Collection<QueryLogRecord> logs = Utils.parseFeedbackLog("/var/tmp/strHist/"+logNum+"."+numOfQueries+"_log_dbpedia_version_"+dbpediaVersion+".ser");
+        Collection<QueryLogRecord> logs = Utils.parseFeedbackLog("/var/tmp/strHist/"+logNum+"."+"log_dbpedia_version_"+dbpediaVersion+".ser");
         Collection<QueryRecord> queryRecords = Utils.adaptLogs(logs, executors);
 
         logger.info("Starting refining histogram: ");

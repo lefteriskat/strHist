@@ -34,6 +34,6 @@ The experiment procedures are divided in 3 main executables for preparing the wo
 **Instructions**
 
 * Change directory into my_scripts/ directory
-* Run prepare_training_workload.sh
-* Run refine_training_workload.sh
-* Run evaluate_on_virtuoso.sh
+* Run prepare_training_workload.sh <number of training batches> <number of queries in each batch> <dbpedia version to run the batch> 
+* Run refine_training_workload.sh <number of training batches> <dbpedia version of the batch>
+* Run evaluate_on_virtuoso.sh <number of queries to be evaluated> <dbpedia version to run and evaluate the queries>

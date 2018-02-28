@@ -214,7 +214,7 @@ public class Utils {
         return new FileManager(baseDir, writerFactory, executors);
     }
 
-    public static QueryLogHandler getHandler(Integer numOfQueries,String dbpediaVersion,Integer logNum) {
+    public static QueryLogHandler getHandler(String dbpediaVersion,Integer logNum) {
         QueryLogHandler handler = null;
         SerialQueryLogFactory factory = new SerialQueryLogFactory();
 
@@ -223,7 +223,7 @@ public class Utils {
             if (!dir.exists())
                 dir.mkdir();
 
-            File qfrLog = new File("/var/tmp/strHist/"+logNum+"."+numOfQueries+"_log_dbpedia_version_"+dbpediaVersion+".ser");
+            File qfrLog = new File("/var/tmp/strHist/"+logNum+"."+"log_dbpedia_version_"+dbpediaVersion+".ser");
             OutputStream out = new FileOutputStream(qfrLog, true);
             handler = factory.getQueryRecordLogger(out);
         } catch (IOException e) {e.printStackTrace();}
@@ -289,7 +289,10 @@ public class Utils {
         }
 
         // Append the random cut.
-        trimmedSubject += lastSlashPrefix.substring(0, trimPos);
+        if(trimPos <= lastSlashPrefix.length())
+        	trimmedSubject += lastSlashPrefix.substring(0, trimPos);
+        else
+        	trimmedSubject += lastSlashPrefix.substring(0, lastSlashPrefix.length());
 
         return trimmedSubject;
     }

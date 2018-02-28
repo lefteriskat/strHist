@@ -11,10 +11,10 @@ DEPENDENCY_PATH=$STRHIST_PATH"/target/lib/*"
 ALL_JARS=$EVAL_PATH
 ALL_JARS+=":"
 ALL_JARS+=$DEPENDENCY_PATH
-while [ $counter -le 2 ]
+while [ $counter -le $1 ]
 do
 echo $counter
-java -Dlog4j.configuration=file:${LOG4J_PATH}/log4j.properties -cp $ALL_JARS gr.demokritos.iit.irss.semagrow.tools.expirementfixedprefix.RefineTrainingWorkload -b 50 -v 3.2 -l $counter -o /var/tmp/strHist/
+java -Dlog4j.configuration=file:${LOG4J_PATH}/log4j.properties -cp $ALL_JARS gr.demokritos.iit.irss.semagrow.tools.expirementfixedprefix.RefineTrainingWorkload -v $2 -l $counter -o /var/tmp/strHist/
 ((counter++))
 done
 echo All done

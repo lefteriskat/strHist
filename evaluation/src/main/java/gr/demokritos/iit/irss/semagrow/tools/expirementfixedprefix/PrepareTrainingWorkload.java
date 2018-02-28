@@ -76,7 +76,7 @@ public class PrepareTrainingWorkload {
     private static void executeExperiment() throws IOException, RepositoryException {
         executors = Executors.newCachedThreadPool();
 
-        QueryLogHandler handler = Utils.getHandler(numOfQueries,dbpediaVersion,logNum);
+        QueryLogHandler handler = Utils.getHandler(dbpediaVersion,logNum);
         interceptor = new QueryLogInterceptor(handler, Utils.getMateralizationManager(executors));
 
 

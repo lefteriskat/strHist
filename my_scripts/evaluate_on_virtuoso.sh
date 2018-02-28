@@ -12,6 +12,6 @@ ALL_JARS=$EVAL_PATH
 ALL_JARS+=":"
 ALL_JARS+=$DEPENDENCY_PATH
 
-java -Dlog4j.configuration=file:${LOG4J_PATH}/log4j.properties -cp $ALL_JARS gr.demokritos.iit.irss.semagrow.tools.expirementfixedprefix.EvaluateOnVirtuoso -n 10 -v 3.2
+java -Dlog4j.configuration=file:${LOG4J_PATH}/log4j.properties -cp $ALL_JARS gr.demokritos.iit.irss.semagrow.tools.expirementfixedprefix.EvaluateOnVirtuoso -n $1 -v $2
 ((counter++))
 echo All done
