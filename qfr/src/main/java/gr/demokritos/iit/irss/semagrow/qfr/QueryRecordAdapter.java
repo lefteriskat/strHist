@@ -428,7 +428,7 @@ public class QueryRecordAdapter implements QueryRecord<RDFRectangle, Stat> {
             		current = distinctCardinalityMap.get(distinct);
             		if(first) {
             			maxCardinality.put(bindingName, current );
-            			maxCardinality.put(bindingName, current );
+            			minCardinality.put(bindingName, current );
             			first = false;
             			continue;
             		}

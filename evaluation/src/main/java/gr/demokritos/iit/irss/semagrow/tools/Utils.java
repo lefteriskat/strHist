@@ -125,18 +125,28 @@ public class Utils {
     }
 
     /**
-     * Fixed root for bigdata_agris_data_2009.jnl
+     * Fixed root for dbpedia dataset3.2 or 3.3
      * @return
      */
     private static STHolesBucket getFixedRoot() {
         RDFRectangle box = new RDFRectangle(new RDFURIRange(), new ExplicitSetRange<URI>(), new RDFValueRange());
 
-        List<Long> list = new ArrayList<>();
-        list.add((long)2576877);//2004: 2318520
-        list.add((long)1);
-        list.add((long)20692);//2004: 19709
-
-        Stat stats = new Stat((long) 17447544, list);// 2004: 15371754
+        List<Long> distinct = new ArrayList<>();
+        List<Long> max = new ArrayList<>();
+        List<Long> min = new ArrayList<>();
+        
+        distinct.add((long)2359117);//3.3: 2653130
+        distinct.add((long)1);
+        distinct.add((long)339112);//3.3: 384029
+        //SSELECT MIN(?count){SELECT COUNT(*) as ?count FROM <http://dbpedia3.2.org> WHERE {?s skos:subject ?category.} GROUP BY ?s}
+        min.add((long)1);//3.3: 1
+        min.add((long)1);
+        min.add((long)1);//3.3: 1
+        //SELECT MAX(?count){SELECT COUNT(*) as ?count FROM <http://dbpedia3.2.org> WHERE {?s skos:subject ?category.} GROUP BY ?s}
+        max.add((long)71);//3.3: 86
+        max.add((long)1);
+        max.add((long)287278);//3.3: 336494
+        Stat stats = new Stat((long) 7716548, distinct , min ,max);// 3.3: 8972539
 
         return new STHolesBucket(box, stats);
     }
