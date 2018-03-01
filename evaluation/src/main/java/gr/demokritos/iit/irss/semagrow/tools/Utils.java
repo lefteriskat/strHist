@@ -125,18 +125,18 @@ public class Utils {
     }
 
     /**
-     * Fixed root for bigdata_agris_data_2009.jnl
+     * Fixed root for dbpedia version 3.2 (3.3)
      * @return
      */
     private static STHolesBucket getFixedRoot() {
         RDFRectangle box = new RDFRectangle(new RDFURIRange(), new ExplicitSetRange<URI>(), new RDFValueRange());
 
-        List<Long> list = new ArrayList<>();
-        list.add((long)2576877);//2004: 2318520
-        list.add((long)1);
-        list.add((long)20692);//2004: 19709
+        List<Long> distinct = new ArrayList<>();
+        distinct.add((long)2359117);//3.3: 2653130
+        distinct.add((long)1);
+        distinct.add((long)339112);//3.3: 384029
 
-        Stat stats = new Stat((long) 17447544, list);// 2004: 15371754
+        Stat stats = new Stat((long) 7716548, distinct);//  3.3: 8972539
 
         return new STHolesBucket(box, stats);
     }
@@ -457,6 +457,43 @@ public class Utils {
                 }
                 
                 i++;
+            }
+            br.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+    
+    /**
+     * Loads random distinct repo categories, from which the training workload will be created.
+     * @return
+     */
+    public static List<String> loadStandardCategories(String path,Integer queryLogSize) {
+        ArrayList<String> list = new ArrayList<String>();
+        Integer base;
+        if(queryLogSize<=85) {
+        	base = 27100;
+        }else if(queryLogSize<=850) {
+        	base = 2710;
+        }else {
+        	base = 271;
+        }
+        Random rand = new Random(); 
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(path));
+            String line = "";
+            Integer i=0,j;
+            while ((line = br.readLine()) != null) {
+                if(i % base == 0) {
+                    list.add(line.trim());
+                }
+                i++;
+                if(list.size()>=queryLogSize)
+                	break;
             }
             br.close();
         } catch (FileNotFoundException e) {

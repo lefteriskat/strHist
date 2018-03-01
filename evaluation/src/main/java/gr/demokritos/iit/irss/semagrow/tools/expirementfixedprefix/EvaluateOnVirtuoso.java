@@ -81,7 +81,7 @@ public class EvaluateOnVirtuoso {
     }
 
     private static void evaluate(Repository repo,RDFSTHolesHistogram histogram) throws IOException, RepositoryException {
-        List<String> subjects = Utils.loadRandomCategories("/var/tmp/log2.txt",numOfQueries);
+        List<String> subjects = Utils.loadStandardCategories("/var/tmp/log2.txt",numOfQueries);
         Long estimation,actual;
         logger.info("Starting evaluating triple store: ");
         RepositoryConnection conn;
