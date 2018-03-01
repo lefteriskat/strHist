@@ -350,6 +350,8 @@ public class QueryRecordCAdapter implements QueryRecord<RDFCircle, Stat> {
                 BindingSet b = iter.next();
 
                 for (String bindingName : b.getBindingNames()) {
+                	System.out.println("BindingName : "+bindingName);
+                	System.out.println("BindingValue : "+b.getValue(bindingName));
                     Set<Value> d;
                     if (!distinctValues.containsKey(bindingName)){
                         d = new HashSet<Value>();

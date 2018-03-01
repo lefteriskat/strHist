@@ -139,6 +139,12 @@ public class VoIDSerializer {
         model.add(bucketResource, VOID.DISTINCTSUBJECTS, createLiteral(bucket.getStatistics().getDistinctCount().get(0)));
         model.add(bucketResource, VOID.PROPERTIES, createLiteral(bucket.getStatistics().getDistinctCount().get(1)));
         model.add(bucketResource, VOID.DISTINCTOBJECTS, createLiteral(bucket.getStatistics().getDistinctCount().get(2)));
+        model.add(bucketResource, VOID.MINSUBJECTS, createLiteral(bucket.getStatistics().getMinCount().get(0)));
+        model.add(bucketResource, VOID.MINPROPERTIES, createLiteral(bucket.getStatistics().getMinCount().get(1)));
+        model.add(bucketResource, VOID.MINOBJECTS, createLiteral(bucket.getStatistics().getMinCount().get(2)));
+        model.add(bucketResource, VOID.MAXSUBJECTS, createLiteral(bucket.getStatistics().getMaxCount().get(0)));
+        model.add(bucketResource, VOID.MAXPROPERTIES, createLiteral(bucket.getStatistics().getMaxCount().get(1)));
+        model.add(bucketResource, VOID.MAXOBJECTS, createLiteral(bucket.getStatistics().getMaxCount().get(2)));
         eleon(bucketResource);
 
         // -- Title handling

@@ -173,7 +173,7 @@ public class STHolesHistogram<R extends Rectangle<R>> extends STHistogramBase<R,
                 }*/
 
                 hole = shrink(bucket, rect, queryRecord);
-                STHolesBucket<R> hole1 = shrink(bucket, rect, queryRecord);
+                
 
                 //if (hole.getBox().toString().contains("GB199"))
                  //   System.out.println();
@@ -215,15 +215,19 @@ public class STHolesHistogram<R extends Rectangle<R>> extends STHistogramBase<R,
     protected String getSubject(R r) { return r.getRange(0).toString(); };
 
     private Stat computeRootStats(Stat oldStats, Stat deltaStats) {
-        long freqN = deltaStats.getFrequency() + oldStats.getFrequency();
+    	long freqN = deltaStats.getFrequency() + oldStats.getFrequency();
 
         List<Long> distinctN = new ArrayList<Long>();
+        List<Long> minN = new ArrayList<Long>();
+        List<Long> maxN = new ArrayList<Long>();
 
         for (int i = 0; i < deltaStats.getDistinctCount().size(); i++) {
             distinctN.add(Math.max(deltaStats.getDistinctCount().get(i), oldStats.getDistinctCount().get(i)));
+            minN.add(Math.max(deltaStats.getMinCount().get(i), oldStats.getMinCount().get(i)));
+            maxN.add(Math.max(deltaStats.getMaxCount().get(i), oldStats.getMaxCount().get(i)));
         }
 
-        return new Stat(freqN, distinctN);
+        return new Stat(freqN, distinctN, minN, maxN);
     }
 
     private boolean isInaccurateEstimation(STHolesBucket<R> bucket, STHolesBucket<R> hole) {

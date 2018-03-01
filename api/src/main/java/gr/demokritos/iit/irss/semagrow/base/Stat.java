@@ -11,17 +11,30 @@ public class Stat {
     public static final Stat emptyStat = new Stat();
 
     private Long frequency;
-
+    
     private List<Long> distinctCount;
+    
+    private List<Long> maxCount;
+    
+    private List<Long> minCount;
 
     public Stat(Long frequency, List<Long> distinctCount) {
         this.distinctCount = distinctCount;
         this.frequency = frequency;
     }
+    
+    public Stat(Long frequency, List<Long> distinctCount,List<Long> minCount,List<Long> maxCount) {
+        this.distinctCount = distinctCount;
+        this.frequency = frequency;
+        this.minCount = minCount;
+        this.maxCount = maxCount;
+    }
 
     public Stat(Stat original) {
         this.frequency = original.getFrequency();
         this.distinctCount = original.getDistinctCount();
+        this.maxCount = original.getMaxCount();
+        this.minCount = original.getMinCount();
     }
 
     /**
@@ -32,9 +45,18 @@ public class Stat {
 		getDistinctCount().add((long)0);
 		getDistinctCount().add((long)0);
 		getDistinctCount().add((long)0);
+		setMaxCount(new ArrayList<Long>());
+		getMaxCount().add((long)0);
+		getMaxCount().add((long)0);
+		getMaxCount().add((long)0);
+		setMinCount(new ArrayList<Long>());
+		getMinCount().add((long)0);
+		getMinCount().add((long)0);
+		getMinCount().add((long)0);
 		setFrequency((long)0);
+		
 	}
-
+    
     public Long getFrequency() {
         return frequency;
     }
@@ -49,6 +71,22 @@ public class Stat {
 
     public void setDistinctCount(List<Long> distinctCount) {
         this.distinctCount = distinctCount;
+    }
+    
+    public List<Long> getMaxCount() {
+        return maxCount;
+    }
+
+    public void setMaxCount(List<Long> maxCount) {
+        this.maxCount = maxCount;
+    }
+    
+    public List<Long> getMinCount() {
+        return minCount;
+    }
+
+    public void setMinCount(List<Long> minCount) {
+        this.minCount = minCount;
     }
 
     public Double getDensity() {
@@ -69,7 +107,7 @@ public class Stat {
 
         res += "(";
         res += frequency.toString() + ",";
-        res += "{";
+        res += " Distinct{";
         boolean comma = false;
         for (Long d : distinctCount) {
             if (comma)
@@ -79,8 +117,29 @@ public class Stat {
             comma = true;
         }
         res +="}";
-        res += ")";
+        res += "Max{";
+        comma = false;
+        for (Long d : maxCount) {
+            if (comma)
+                res += ",";
 
+            res += d.toString();
+            comma = true;
+        }
+        res +="}";
+        res += "Min{";
+        comma = false;
+        for (Long d : minCount) {
+            if (comma)
+                res += ",";
+
+            res += d.toString();
+            comma = true;
+        }
+        res +="}";
+        res += ")";
+        
+        
         return res;
 
     }
