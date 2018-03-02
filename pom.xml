@@ -15,6 +15,7 @@
         <semagrow.version>1.5.2</semagrow.version>
         <sesame.version>2.7.10</sesame.version>
         <slf4j.version>1.7.12</slf4j.version>
+        <strhist.path>/home/lefteris/GitHub/strHist</strhist.path>
 	<jdk.version>1.8</jdk.version>
 	</properties>
 
@@ -141,7 +142,7 @@
                   <goal>copy-dependencies</goal>
                 </goals>
                 <configuration>
-                  <outputDirectory>/home/lefteris/GitHub/strHist/target/lib</outputDirectory>
+                  <outputDirectory>${strhist.path}/target/lib</outputDirectory>
                 </configuration>
               </execution>
             </executions>
