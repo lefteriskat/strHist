@@ -2,6 +2,7 @@ package gr.demokritos.iit.irss.semagrow.stholes;
 
 
 import gr.demokritos.iit.irss.semagrow.api.Rectangle;
+import gr.demokritos.iit.irss.semagrow.base.Estimation;
 import gr.demokritos.iit.irss.semagrow.base.Stat;
 
 import java.util.ArrayList;
@@ -221,6 +222,23 @@ public class STHolesBucket<R extends Rectangle> {
         
         float estimate = ((float)this.statistics.getFrequency().longValue()) / ((float)dvc);
         return Math.round( estimate );
+    }
+    
+    public Estimation getNewEstimate(R rec) {
+        long dvc = 1;   //num of distinct values
+        
+        // If no argument, return myself's estimate
+        if (rec == null) { rec = this.box; }
+
+        for (int i=0; i< rec.getDimensionality(); i++) {
+            if ((rec.getRange(i)).isUnit()) {
+            	dvc *= this.statistics.getDistinctCount().get(i);
+            }
+        }
+        
+        float estimate = ((float)this.statistics.getFrequency().longValue()) / ((float)dvc);
+        //return Math.round( estimate );
+        return new Estimation((long) Math.round( estimate ));
     }
 
     @Override

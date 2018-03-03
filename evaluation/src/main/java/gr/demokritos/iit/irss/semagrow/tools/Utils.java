@@ -7,6 +7,7 @@ import eu.semagrow.querylog.api.QueryLogHandler;
 import eu.semagrow.querylog.api.QueryLogParser;
 import eu.semagrow.querylog.api.QueryLogRecord;
 import gr.demokritos.iit.irss.semagrow.api.qfr.QueryRecord;
+import gr.demokritos.iit.irss.semagrow.base.Estimation;
 import gr.demokritos.iit.irss.semagrow.base.Stat;
 import gr.demokritos.iit.irss.semagrow.base.range.ExplicitSetRange;
 import gr.demokritos.iit.irss.semagrow.file.FileManager;
@@ -25,6 +26,7 @@ import gr.demokritos.iit.irss.semagrow.rdf.io.json.JSONSerializer;
 import gr.demokritos.iit.irss.semagrow.rdf.io.sevod.VoIDSerializer;
 import gr.demokritos.iit.irss.semagrow.sesame.ActualCardinalityEstimator;
 import gr.demokritos.iit.irss.semagrow.sesame.CardinalityEstimatorImpl;
+import gr.demokritos.iit.irss.semagrow.sesame.NewCardinalityEstimatorImpl;
 import gr.demokritos.iit.irss.semagrow.sesame.TestSail;
 import gr.demokritos.iit.irss.semagrow.stholes.STHolesBucket;
 import gr.demokritos.iit.irss.semagrow.stholes.STHolesHistogram;
@@ -333,6 +335,22 @@ public class Utils {
         }
 
         return 0;
+    }
+    
+    public static Estimation newEvaluateOnHistogram(RDFSTHolesHistogram histogram, String query) {
+        try {
+            logger.info("Cardinality estimation on Histogram for query: " + query);
+            ParsedTupleQuery q = QueryParserUtil.parseTupleQuery(QueryLanguage.SPARQL, query, "http://dbpedia.org");
+
+            Estimation card = new NewCardinalityEstimatorImpl(histogram).
+                    getCardinality(q.getTupleExpr(), EmptyBindingSet.getInstance());
+
+            return card;
+        } catch (MalformedQueryException e) {
+            e.printStackTrace();
+        }
+
+        return new Estimation();
     }
 
     public static long evaluateOnHistogram1(RDFSTHolesHistogram histogram, String query) {

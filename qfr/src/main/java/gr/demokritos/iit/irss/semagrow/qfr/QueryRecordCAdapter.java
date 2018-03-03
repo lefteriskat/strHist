@@ -341,31 +341,71 @@ public class QueryRecordCAdapter implements QueryRecord<RDFCircle, Stat> {
         private Stat getStat(Iteration<BindingSet, QueryEvaluationException> iter)
                 throws QueryEvaluationException
         {
-            Stat stat = new Stat();
+        	Stat stat = new Stat();
             long count = 0;
             Map<String, Set<Value>> distinctValues = new HashMap<String,Set<Value>>();
-
+            Map<String, Map<Value,Long>> maxAndMinValues = new HashMap<String,Map<Value,Long>>();
             while (iter.hasNext()) {
                 count++;
                 BindingSet b = iter.next();
 
                 for (String bindingName : b.getBindingNames()) {
-                	System.out.println("BindingName : "+bindingName);
-                	System.out.println("BindingValue : "+b.getValue(bindingName));
+                	
+                	Value currValue = b.getValue(bindingName);
                     Set<Value> d;
+                    Map<Value,Long> v;
                     if (!distinctValues.containsKey(bindingName)){
                         d = new HashSet<Value>();
+                        v = new HashMap<Value,Long>();
                     } else {
                         d  = distinctValues.get(bindingName);
+                        v  = maxAndMinValues.get(bindingName);
+                    }
+                    
+                    //Count how many times every distinct value appears
+                    if(v.containsKey(currValue)) {
+                    	v.put(currValue, v.get(currValue)+1);
+                    }else {
+                    	v.put(currValue,(long) 1);
                     }
                     d.add(b.getValue(bindingName));
                     distinctValues.put(bindingName, d);
+                    maxAndMinValues.put(bindingName, v);
                 }
             }
-
+            
             stat.setFrequency(count);
+            
+//            Stream<Map.Entry<Value,Long>> sorted =
+//            		values.entrySet().stream()
+//            	       .sorted(Map.Entry.comparingByValue());
+            Map<String,Long> maxCardinality = new HashMap<String,Long>();
+            Map<String,Long> minCardinality = new HashMap<String,Long>();
+            
+            for(String bindingName : maxAndMinValues.keySet()) {
+            	Map<Value,Long> distinctCardinalityMap = maxAndMinValues.get(bindingName);
+            	boolean first = true;
+            	Long current;
+            	for(Value distinct : distinctCardinalityMap.keySet()) {
+            		current = distinctCardinalityMap.get(distinct);
+            		if(first) {
+            			maxCardinality.put(bindingName, current );
+            			minCardinality.put(bindingName, current );
+            			first = false;
+            			continue;
+            		}
+            		
+            		if(current > maxCardinality.get(bindingName)) {
+            			maxCardinality.put(bindingName,current);
+            		}else if(current < minCardinality.get(bindingName)) {
+            			minCardinality.put(bindingName,current);
+            		}
+            	}
+            }
 
             ArrayList<Long> distinctCounts = new ArrayList<Long>();
+            ArrayList<Long> minCounts = new ArrayList<Long>();
+            ArrayList<Long> maxCounts = new ArrayList<Long>();
 
             List<Var> dimensions = getDimensions();
 
@@ -374,22 +414,32 @@ public class QueryRecordCAdapter implements QueryRecord<RDFCircle, Stat> {
                 Value v = getValue(dim);
 
                 if (v != null) {
-                    if (count == 0)
+                    if (count == 0) {
                         distinctCounts.add((long) 0);
-                    else
+                        minCounts.add((long) 0);
+                        maxCounts.add((long) 0);
+                    }
+                    else {
                         distinctCounts.add((long) 1);
-                } else {
+                        minCounts.add((long) 1);
+                        maxCounts.add((long) 1);
+                    }
+                                    } else {
                     Set<Value> values = distinctValues.get(dim.getName());
-
+                    Long max = maxCardinality.get(dim.getName());
+                    Long min = minCardinality.get(dim.getName());
                     if (values == null)
                         distinctCounts.add((long) 0);
                     else
                         distinctCounts.add((long) values.size());
+                    minCounts.add((min!=null)?min:(long) 1);
+                    maxCounts.add((max!=null)?max:(long) 1);
                 }
             }
 
             stat.setDistinctCount(distinctCounts);
-
+            stat.setMinCount(minCounts);
+            stat.setMaxCount(maxCounts);
             return stat;
         }
 

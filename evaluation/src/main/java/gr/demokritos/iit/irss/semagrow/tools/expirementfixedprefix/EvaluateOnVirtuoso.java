@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import eu.semagrow.querylog.api.QueryLogException;
 import eu.semagrow.querylog.api.QueryLogHandler;
 import eu.semagrow.querylog.api.QueryLogWriter;
+import gr.demokritos.iit.irss.semagrow.base.Estimation;
 import gr.demokritos.iit.irss.semagrow.rdf.RDFSTHolesHistogram;
 import gr.demokritos.iit.irss.semagrow.sesame.QueryLogInterceptor;
 import gr.demokritos.iit.irss.semagrow.tools.Utils;
@@ -82,13 +83,14 @@ public class EvaluateOnVirtuoso {
 
     private static void evaluate(Repository repo,RDFSTHolesHistogram histogram) throws IOException, RepositoryException {
         List<String> subjects = Utils.loadRandomCategories("/var/tmp/log2.txt",numOfQueries);
-        Long estimation,actual;
+        Long actual;
+        Estimation estimation;
         logger.info("Starting evaluating triple store: ");
         RepositoryConnection conn;
 
         FileWriter fileWriter = new FileWriter("/var/tmp/strHist/results"+dbpediaVersion+".txt");
         PrintWriter printWriter = new PrintWriter(fileWriter);
-        printWriter.println("Actual\tEstimation");
+        printWriter.println("Actual\tCurrent\tK1\tK2\tK3\tK4\tK5");
         for (int j=0; j<subjects.size(); j++) {
             logger.info("Query No: " + j);
             try {
@@ -97,10 +99,10 @@ public class EvaluateOnVirtuoso {
           
                 String q = String.format(query, subjects.get(j));
 
-                estimation = Utils.evaluateOnHistogram(histogram, q);
+                estimation = Utils.newEvaluateOnHistogram(histogram, q);
                 actual = Utils.evaluateOnTripleStore(conn, q);
                 
-                printWriter.println(actual +"\t"+estimation);
+                printWriter.println(actual +"\t"+estimation.toString());
                 
                 conn.close();
             } catch (RepositoryException mqe) {

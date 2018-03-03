@@ -4,6 +4,7 @@ import gr.demokritos.iit.irss.semagrow.api.Rectangle;
 import gr.demokritos.iit.irss.semagrow.api.STHistogram;
 import gr.demokritos.iit.irss.semagrow.api.qfr.QueryRecord;
 import gr.demokritos.iit.irss.semagrow.api.qfr.QueryResult;
+import gr.demokritos.iit.irss.semagrow.base.Estimation;
 import gr.demokritos.iit.irss.semagrow.base.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +70,28 @@ public class STHolesCircleHistogram<R extends Rectangle<R>> extends STHistogramB
         else
             return 0;
     }
+    
+    /**
+     * estimates the number of tuples
+     * that match rectangle {rec}
+     * @param rec rectangle
+     * @return number of tuples
+     */
+    public Estimation newEstimate(R rec) {
+        if (root != null) {
+            // if rec is larger than our root
+            if (rec.isEnclosing(root.getBox())) {
+                return root.getNewEstimate(rec);
+            }
+            else if (!root.getBox().isEnclosing(rec)) {
+                return new Estimation();
+            }
+
+            return newEstimateAux(rec, root);
+        }
+        else
+            return new Estimation();
+    }
 
     /**
      * estimates the number of tuples contained in {rec}
@@ -97,6 +120,36 @@ public class STHolesCircleHistogram<R extends Rectangle<R>> extends STHistogramB
         logger.info("Estimated triples: " + est);
         return est;
     }
+    
+    
+    /**
+     * estimates the number of tuples contained in {rec}
+     * by finding the enclosing bucket(s)
+     * @param rec rectangle
+     * @param b bucket
+     * @return estimated number of tuples
+     */
+    private Estimation newEstimateAux(R rec, STHolesBucket<R> b) {
+        Estimation est = new Estimation();
+
+        List<STHolesBucket<R>> enclosingBuckets = new ArrayList<STHolesBucket<R>>();
+
+        getEnclosingBuckets(rec, b, enclosingBuckets);
+
+        logger.info("Query Rectangle: " + rec.toString());
+        logger.info("Number of enclosed buckets: " + enclosingBuckets.size());
+
+        for (STHolesBucket<R> enclosingB : enclosingBuckets) {
+            logger.info("Enclosed Bucket Rectangle: " + enclosingB.getBox().toString());
+            logger.info("Enclosed Bucket Statistics: " + enclosingB.getStatistics().toString());
+            Estimation bucketEstimation = enclosingB.getNewEstimate(rec);
+            Estimation.add(est, bucketEstimation) ;
+        }
+
+        logger.info("Estimated triples: " + est.toString());
+        return est;
+    }
+    
 
     private void getEnclosingBuckets(R rec, STHolesBucket<R> b, List<STHolesBucket<R>> enclosingBuckets) {
         boolean isEnclosingBucket = false;

@@ -387,8 +387,7 @@ public class QueryRecordAdapter implements QueryRecord<RDFRectangle, Stat> {
                 BindingSet b = iter.next();
 
                 for (String bindingName : b.getBindingNames()) {
-                	System.out.println("BindingName : "+bindingName);
-                	System.out.println("BindingValue : "+b.getValue(bindingName));
+                	
                 	Value currValue = b.getValue(bindingName);
                     Set<Value> d;
                     Map<Value,Long> v;

@@ -41,7 +41,7 @@ public class RDFQueryResult implements QueryResult<RDFRectangle,Stat>, Serializa
 	 */
 	@SuppressWarnings({ "rawtypes" })
 	public Stat getCardinality(RDFRectangle rect) {
-
+		System.out.println("MPHKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa");
 		long frequency = 0;
 		List<Long> distinctCount = new ArrayList<Long>();
 		// Help structures to store distinct items for each dimension
@@ -67,8 +67,8 @@ public class RDFQueryResult implements QueryResult<RDFRectangle,Stat>, Serializa
 					
 					String value = clean(b.getValue());// dn exei idiaiterh xrhsimothta
 					
-//					System.out.println(">>>" + type);
-//					System.out.println(">>>" + value);
+					System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Type  = " + type);
+					System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Value = " + value);
 					switch (type) {
 					case 0:		// Subjects
 						if (! ((PrefixRange) rect.getRange(type)).includes(value))
