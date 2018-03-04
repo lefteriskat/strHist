@@ -37,6 +37,7 @@ The experiment procedures are divided in 3 main executables for preparing the wo
 
 **Instructions**
 
+* Unzip logs.tar.gz and Copy file log2.txt to /var/tmp/ directory
 * Change directory into my_scripts/ directory
 * Set the STRHIST_PATH variable running -> export STRHIST_PATH="<path_to_strhist>/strHist"
 * Run prepare_training_workload.sh number_of_training_batches number_of_queries_in_each_batch dbpedia_version_to_run_the_batch 
