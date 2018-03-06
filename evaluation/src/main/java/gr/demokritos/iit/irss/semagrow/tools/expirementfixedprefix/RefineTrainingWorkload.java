@@ -67,7 +67,8 @@ public class RefineTrainingWorkload {
             histogram = Utils.loadPreviousHistogram(outputPath);
         else
             histogram = Utils.loadCurrentHistogram(outputPath);
-
+        
+        histogram.setMaxBucketsNum(100);
         logger.info("Refining histogram ");
         ((STHolesHistogram)histogram).refine(listQueryRecords);
         logger.info("Refinement is over.");

@@ -413,14 +413,15 @@ public class QueryRecordAdapter implements QueryRecord<RDFRectangle, Stat> {
             
             stat.setFrequency(count);
             
-//            Stream<Map.Entry<Value,Long>> sorted =
-//            		values.entrySet().stream()
-//            	       .sorted(Map.Entry.comparingByValue());
+            
             Map<String,Long> maxCardinality = new HashMap<String,Long>();
             Map<String,Long> minCardinality = new HashMap<String,Long>();
             
+            
             for(String bindingName : maxAndMinValues.keySet()) {
             	Map<Value,Long> distinctCardinalityMap = maxAndMinValues.get(bindingName);
+//            	Long max = Collections.max(distinctCardinalityMap.entrySet(),Map.Entry.comparingByValue()).getValue();
+//            	Long min = Collections.min(distinctCardinalityMap.entrySet(),Map.Entry.comparingByValue()).getValue();
             	boolean first = true;
             	Long current;
             	for(Value distinct : distinctCardinalityMap.keySet()) {

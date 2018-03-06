@@ -41,15 +41,18 @@ public class RDFQueryResult implements QueryResult<RDFRectangle,Stat>, Serializa
 	 */
 	@SuppressWarnings({ "rawtypes" })
 	public Stat getCardinality(RDFRectangle rect) {
-		System.out.println("MPHKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa");
+		
 		long frequency = 0;
 		List<Long> distinctCount = new ArrayList<Long>();
+		List<Long> minCount = new ArrayList<Long>();
+		List<Long> maxCount = new ArrayList<Long>();
 		// Help structures to store distinct items for each dimension
-		Set<String> prefixSet = new HashSet<String>(), predicateSet = new HashSet<String>();
-		Set<Integer> objectIntegerSet = new HashSet<Integer>();
-		Set<Long> objectLongSet = new HashSet<Long>();
-		Set<Date> objectDateSet = new HashSet<Date>();
-		Set<String> objectStringSet = new HashSet<String>();	
+		Map<String,Long> subjectSet = new HashMap<String,Long>();
+		Map<String,Long> predicateSet = new HashMap<String,Long>();
+		Map<Integer,Long> objectIntegerSet = new HashMap<Integer,Long>();
+		Map<Long,Long> objectLongSet = new HashMap<Long,Long>();
+		Map<Date,Long> objectDateSet = new HashMap<Date,Long>();
+		Map<String,Long> objectStringSet = new HashMap<String,Long>();	
 		
 
 		// First check if all const variables of the query exist in rectangle.
@@ -67,20 +70,30 @@ public class RDFQueryResult implements QueryResult<RDFRectangle,Stat>, Serializa
 					
 					String value = clean(b.getValue());// dn exei idiaiterh xrhsimothta
 					
-					System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Type  = " + type);
-					System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Value = " + value);
 					switch (type) {
 					case 0:		// Subjects
-						if (! ((PrefixRange) rect.getRange(type)).includes(value))
+						if (! ((PrefixRange) rect.getRange(type)).includes(value)) {
 							contained = false;
-						else
-						    prefixSet.add(value);
+						}
+						else {
+							if(!subjectSet.containsKey(value)) {
+								subjectSet.put(value,1L);
+							}else {
+								subjectSet.put(value,subjectSet.get(value)+1);
+							}
+						}
 						break;
 					case 1:		// Predicates
-						if (!((ExplicitSetRange<String>) rect.getRange(type)).includes(value))
+						if (!((ExplicitSetRange<String>) rect.getRange(type)).includes(value)) {
 							contained = false;
-						else
-						    predicateSet.add(value);
+						}
+						else {
+							if(!predicateSet.containsKey(value)) {
+								predicateSet.put(value,1L);
+							}else {
+								predicateSet.put(value,predicateSet.get(value)+1);
+							}
+						}
 						break;
 					case 2:		// Objects
 						// TODO: Change! 		
@@ -98,18 +111,32 @@ public class RDFQueryResult implements QueryResult<RDFRectangle,Stat>, Serializa
 								val = ValueFactoryImpl.getInstance()
 										.createLiteral(valueURI, XMLSchema.INTEGER);
 
-                                if (!((RDFLiteralRange) rect.getRange(type)).includes(val))
+                                if (!((RDFLiteralRange) rect.getRange(type)).includes(val)) {
                                     contained = false;
-                                else
-								    objectIntegerSet.add(Integer.parseInt(valueURI));
+                                }
+                                else {
+                                	Integer intValue = Integer.parseInt(valueURI);
+                                	if(!objectIntegerSet.containsKey(intValue)) {
+                                		objectIntegerSet.put(intValue,1L);
+                                	}else {
+                                		objectIntegerSet.put(intValue,objectIntegerSet.get(intValue)+1);
+                                	}
+                                }
 								
 							} else if (typeURI.equals("long")) {
 								val = ValueFactoryImpl.getInstance()
 										.createLiteral(valueURI, XMLSchema.LONG);
-                                if (!((RDFLiteralRange) rect.getRange(type)).includes(val))
+                                if (!((RDFLiteralRange) rect.getRange(type)).includes(val)) {
                                     contained = false;
-								else
-                                    objectLongSet.add(Long.parseLong(valueURI));
+                                }
+								else {
+									Long longValue = Long.parseLong(valueURI);
+									if(!objectLongSet.containsKey(longValue)) {
+										objectLongSet.put(longValue,1L);
+									}else {
+										objectLongSet.put(longValue,objectLongSet.get(longValue)+1);
+									}
+								}
 								
 							} else if (typeURI.equals("dateTime")) {
 								
@@ -125,8 +152,13 @@ public class RDFQueryResult implements QueryResult<RDFRectangle,Stat>, Serializa
 											.contains(new RDFLiteralRange(date, date))) {
 										 contained = false;
 									 }
-								     else
-									    objectDateSet.add(date);
+								     else {
+									    if(!objectDateSet.containsKey(date)) {
+									    	objectDateSet.put(date,1L);
+										}else {
+											objectDateSet.put(date,objectDateSet.get(date)+1);
+										}
+								     }
 									
 									break;								
 								} else 
@@ -137,19 +169,31 @@ public class RDFQueryResult implements QueryResult<RDFRectangle,Stat>, Serializa
 						} else if (!value.contains("^^") && value.contains("http://")) {// URL							
 							URI valURI = ValueFactoryImpl.getInstance().createURI(value);
 
-                            if (!((RDFLiteralRange) rect.getRange(type)).includes(val))
+                            if (!((RDFLiteralRange) rect.getRange(type)).includes(val)) {
                                 contained = false;
-                            else
-							    objectStringSet.add(value);
+                            }
+                            else {
+							    if(!objectStringSet.containsKey(value)) {
+							    	objectStringSet.put(value,1L);
+								}else {
+									objectStringSet.put(value,objectStringSet.get(value)+1);
+								}
+                            }
 							
 						} else {// Plain Literal
 							val = ValueFactoryImpl.getInstance()
 									.createLiteral(value, XMLSchema.STRING);
 
-                            if (!((RDFLiteralRange) rect.getRange(type)).includes(val))
+                            if (!((RDFLiteralRange) rect.getRange(type)).includes(val)) {
                                 contained = false;
-							else
-                                objectStringSet.add(value);
+                            }
+							else {
+								if(!objectStringSet.containsKey(value)) {
+							    	objectStringSet.put(value,1L);
+								}else {
+									objectStringSet.put(value,objectStringSet.get(value)+1);
+								}
+							}
 						}
 						
 					default:
@@ -167,11 +211,12 @@ public class RDFQueryResult implements QueryResult<RDFRectangle,Stat>, Serializa
 
 			}// for
 		}// if
-		else
+		else {
 			System.err.println("Not all query's const variables exist in Rectangle");	
+		}
 		
 		// Subject distinct count				 
-		distinctCount.add(prefixSet.isEmpty() ? 1 : (long)prefixSet.size()); 
+		distinctCount.add(subjectSet.isEmpty() ? 1 : (long)subjectSet.size()); 
 		// Predicate distinct count
 		distinctCount.add(predicateSet.isEmpty() ? 1 : (long)predicateSet.size());
 		// Object distinct count		
@@ -184,9 +229,40 @@ public class RDFQueryResult implements QueryResult<RDFRectangle,Stat>, Serializa
 							(long)objectLongSet.size() +
 							(long)objectDateSet.size() +
 							(long)objectStringSet.size()));
+//    	Long max = Collections.max(distinctCardinalityMap.entrySet(),Map.Entry.comparingByValue()).getValue();
+//    	Long min = Collections.min(distinctCardinalityMap.entrySet(),Map.Entry.comparingByValue()).getValue();
+//      Long min = Collections.min(subjectSet.entrySet(),Comparator.comparingLong(Map.Entry::getValue)).getValue();		
+		minCount.add(subjectSet.isEmpty() ? 1L :
+			(long) Collections.min(subjectSet.entrySet(),Map.Entry.comparingByValue()).getValue());
+		minCount.add(predicateSet.isEmpty() ? 1L :
+			Collections.min(predicateSet.entrySet(),Map.Entry.comparingByValue()).getValue());
+		
+		maxCount.add(subjectSet.isEmpty() ? 1L :
+			Collections.max(subjectSet.entrySet(),Map.Entry.comparingByValue()).getValue());
+		maxCount.add(predicateSet.isEmpty() ? 1L :
+			Collections.max(predicateSet.entrySet(),Map.Entry.comparingByValue()).getValue());
+		
+		if(!objectIntegerSet.isEmpty()) {
+			minCount.add(Collections.min(objectIntegerSet.entrySet(),Map.Entry.comparingByValue()).getValue());
+			maxCount.add(Collections.max(objectIntegerSet.entrySet(),Map.Entry.comparingByValue()).getValue());
+		} else if(!objectLongSet.isEmpty()) {
+			minCount.add(Collections.min(objectLongSet.entrySet(),Map.Entry.comparingByValue()).getValue());
+			maxCount.add(Collections.max(objectLongSet.entrySet(),Map.Entry.comparingByValue()).getValue());
+		} else if(!objectDateSet.isEmpty()) {
+			minCount.add(Collections.min(objectDateSet.entrySet(),Map.Entry.comparingByValue()).getValue());
+			maxCount.add(Collections.max(objectDateSet.entrySet(),Map.Entry.comparingByValue()).getValue());
+		}else if(!objectStringSet.isEmpty()) {
+			minCount.add(Collections.min(objectStringSet.entrySet(),Map.Entry.comparingByValue()).getValue());
+			maxCount.add(Collections.max(objectStringSet.entrySet(),Map.Entry.comparingByValue()).getValue());
+		}else {
+			minCount.add(1L);
+			maxCount.add(1L);
+		}
 		
 		
-		return new Stat(frequency, distinctCount);
+		
+		
+		return new Stat(frequency, distinctCount, minCount, maxCount);
 	}// getCardinality
 
 

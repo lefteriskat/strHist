@@ -28,6 +28,17 @@ public class Estimation {
 		metric5 = (long) c;
 	}
 	
+	public Estimation(Long frequency,Long distinct,Long min,Long max){
+		System.out.println("Frequency = "+frequency+" dvc = "+distinct);
+		System.out.println("Min = "+min+" Max = "+max);
+		currentEstimation = (long) Math.round((float)frequency/(float) distinct);
+		metric1 = currentEstimation + (long) Math.round((float)currentEstimation*(float)0.3 );
+		metric2 = currentEstimation + (long) Math.round((float)max*(float)0.01 );
+		metric3 = currentEstimation + (long) Math.round((float)max*(float)0.05 );
+		metric4 = currentEstimation + min;
+		metric5 = min + (long) Math.round((float)max*(float)0.1 );
+	}
+	
 	
 	
 	public Long getCurrentEstimation() {

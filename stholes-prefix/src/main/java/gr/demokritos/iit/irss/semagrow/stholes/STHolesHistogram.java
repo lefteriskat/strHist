@@ -20,7 +20,7 @@ import java.util.*;
 public class STHolesHistogram<R extends Rectangle<R>> extends STHistogramBase<R,Stat> implements STHistogram<R,Stat> {
     static final Logger logger = LoggerFactory.getLogger(STHolesHistogram.class);
     private STHolesBucket<R> root;
-    public long maxBucketsNum = 50;
+    public long maxBucketsNum = 100;
     public Double epsilon = 0.0;
     private long bucketsNum = 0;
 

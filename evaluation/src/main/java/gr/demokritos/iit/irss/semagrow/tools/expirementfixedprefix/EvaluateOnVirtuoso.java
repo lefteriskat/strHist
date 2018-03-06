@@ -90,9 +90,11 @@ public class EvaluateOnVirtuoso {
 
         FileWriter fileWriter = new FileWriter("/var/tmp/strHist/results"+dbpediaVersion+".txt");
         PrintWriter printWriter = new PrintWriter(fileWriter);
+        printWriter.println("BucketsNum = "+histogram.getBucketsNum());
         printWriter.println("Actual\tCurrent\tK1\tK2\tK3\tK4\tK5");
         for (int j=0; j<subjects.size(); j++) {
             logger.info("Query No: " + j);
+            
             try {
                 conn = repo.getConnection();
 

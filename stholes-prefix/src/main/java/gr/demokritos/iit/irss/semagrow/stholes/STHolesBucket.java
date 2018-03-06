@@ -226,19 +226,20 @@ public class STHolesBucket<R extends Rectangle> {
     
     public Estimation getNewEstimate(R rec) {
         long dvc = 1;   //num of distinct values
-        
+        long max = 1;   //num of maximum  cardinaality
+        long min = 1;   //num of minimum  cardinaality
         // If no argument, return myself's estimate
         if (rec == null) { rec = this.box; }
 
         for (int i=0; i< rec.getDimensionality(); i++) {
             if ((rec.getRange(i)).isUnit()) {
             	dvc *= this.statistics.getDistinctCount().get(i);
+            	min *= this.statistics.getMinCount().get(i);
+            	max *= this.statistics.getMaxCount().get(i);
             }
         }
-        
-        float estimate = ((float)this.statistics.getFrequency().longValue()) / ((float)dvc);
         //return Math.round( estimate );
-        return new Estimation((long) Math.round( estimate ));
+        return new Estimation(this.statistics.getFrequency(), dvc, min, max);
     }
 
     @Override
