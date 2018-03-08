@@ -303,7 +303,7 @@ public class PrefixRange
 
             if (comma)
                 res += ",";
-            res = "\"" + p + "\"";
+            res += "\"" + p + "\"";
 
             comma = true;
         }

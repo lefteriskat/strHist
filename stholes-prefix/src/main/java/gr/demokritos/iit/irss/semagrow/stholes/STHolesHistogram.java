@@ -4,6 +4,7 @@ import gr.demokritos.iit.irss.semagrow.api.Rectangle;
 import gr.demokritos.iit.irss.semagrow.api.STHistogram;
 import gr.demokritos.iit.irss.semagrow.api.qfr.QueryRecord;
 import gr.demokritos.iit.irss.semagrow.api.qfr.QueryResult;
+import gr.demokritos.iit.irss.semagrow.base.Estimation;
 import gr.demokritos.iit.irss.semagrow.base.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,7 @@ import java.util.*;
 public class STHolesHistogram<R extends Rectangle<R>> extends STHistogramBase<R,Stat> implements STHistogram<R,Stat> {
     static final Logger logger = LoggerFactory.getLogger(STHolesHistogram.class);
     private STHolesBucket<R> root;
-    public long maxBucketsNum = 50;
+    public long maxBucketsNum = 100;
     public Double epsilon = 0.0;
     private long bucketsNum = 0;
 
@@ -67,7 +68,29 @@ public class STHolesHistogram<R extends Rectangle<R>> extends STHistogramBase<R,
         else
             return 0;
     }
+    
+    /**
+     * estimates the number of tuples
+     * that match rectangle {rec}
+     * @param rec rectangle
+     * @return number of tuples
+     */
+    public Estimation newEstimate(R rec) {
+        if (root != null) {
+            // if rec is larger than our root
+            if (rec.isEnclosing(root.getBox())) {
+                return root.getNewEstimate(rec);
+            }
+            else if (!root.getBox().isEnclosing(rec)) {
+                return new Estimation();
+            }
 
+            return newEstimateAux(rec, root);
+        }
+        else
+            return new Estimation();
+    }
+    
     /**
      * estimates the number of tuples contained in {rec}
      * by finding the enclosing bucket(s)
@@ -93,6 +116,34 @@ public class STHolesHistogram<R extends Rectangle<R>> extends STHistogramBase<R,
         }
 
         logger.info("Estimated triples: " + est);
+        return est;
+}
+
+    /**
+     * estimates the number of tuples contained in {rec}
+     * by finding the enclosing bucket(s)
+     * @param rec rectangle
+     * @param b bucket
+     * @return estimated number of tuples
+     */
+    private Estimation newEstimateAux(R rec, STHolesBucket<R> b) {
+        Estimation est = new Estimation();
+
+        List<STHolesBucket<R>> enclosingBuckets = new ArrayList<STHolesBucket<R>>();
+
+        getEnclosingBuckets(rec, b, enclosingBuckets);
+
+        logger.info("Query Rectangle: " + rec.toString());
+        logger.info("Number of enclosed buckets: " + enclosingBuckets.size());
+
+        for (STHolesBucket<R> enclosingB : enclosingBuckets) {
+            logger.info("Enclosed Bucket Rectangle: " + enclosingB.getBox().toString());
+            logger.info("Enclosed Bucket Statistics: " + enclosingB.getStatistics().toString());
+            Estimation bucketEstimation = enclosingB.getNewEstimate(rec);
+            est = Estimation.add(est, bucketEstimation) ;
+        }
+
+        logger.info("Estimated triples: " + est.toString());
         return est;
     }
 
@@ -173,7 +224,7 @@ public class STHolesHistogram<R extends Rectangle<R>> extends STHistogramBase<R,
                 }*/
 
                 hole = shrink(bucket, rect, queryRecord);
-                STHolesBucket<R> hole1 = shrink(bucket, rect, queryRecord);
+                
 
                 //if (hole.getBox().toString().contains("GB199"))
                  //   System.out.println();
@@ -215,15 +266,19 @@ public class STHolesHistogram<R extends Rectangle<R>> extends STHistogramBase<R,
     protected String getSubject(R r) { return r.getRange(0).toString(); };
 
     private Stat computeRootStats(Stat oldStats, Stat deltaStats) {
-        long freqN = deltaStats.getFrequency() + oldStats.getFrequency();
+    	long freqN = deltaStats.getFrequency() + oldStats.getFrequency();
 
         List<Long> distinctN = new ArrayList<Long>();
+        List<Long> minN = new ArrayList<Long>();
+        List<Long> maxN = new ArrayList<Long>();
 
         for (int i = 0; i < deltaStats.getDistinctCount().size(); i++) {
             distinctN.add(Math.max(deltaStats.getDistinctCount().get(i), oldStats.getDistinctCount().get(i)));
+            minN.add(Math.min(deltaStats.getMinCount().get(i), oldStats.getMinCount().get(i)));
+            maxN.add(Math.max(deltaStats.getMaxCount().get(i), oldStats.getMaxCount().get(i)));
         }
 
-        return new Stat(freqN, distinctN);
+        return new Stat(freqN, distinctN, minN, maxN);
     }
 
     private boolean isInaccurateEstimation(STHolesBucket<R> bucket, STHolesBucket<R> hole) {
@@ -650,8 +705,10 @@ public class STHolesHistogram<R extends Rectangle<R>> extends STHistogramBase<R,
         R newBox = bp.getBox();
         long newFreq = bp.getStatistics().getFrequency();
         List<Long> newDistinct = bp.getStatistics().getDistinctCount();
+        List<Long> newMin = bp.getStatistics().getMinCount();
+        List<Long> newMax = bp.getStatistics().getMaxCount();
         STHolesBucket<R> newParent = bp.getParent();
-        Stat newStatistics = new Stat(newFreq, newDistinct);
+        Stat newStatistics = new Stat(newFreq, newDistinct, newMin, newMax);
 
         STHolesBucket<R> bn = new STHolesBucket<R>(newBox, newStatistics, null, newParent);
 
@@ -755,23 +812,37 @@ public class STHolesHistogram<R extends Rectangle<R>> extends STHistogramBase<R,
         // Set statistics
         long newFrequency = b1.getStatistics().getFrequency() + b2.getStatistics().getFrequency();
         List<Long> b1Distinct = b1.getStatistics().getDistinctCount();
-        List<Long> curDistinct = b2.getStatistics().getDistinctCount();
+        List<Long> b2Distinct = b2.getStatistics().getDistinctCount();
+        List<Long> b1Max = b1.getStatistics().getMaxCount();
+        List<Long> b2Max = b2.getStatistics().getMaxCount();
+        List<Long> b1Min = b1.getStatistics().getMinCount();
+        List<Long> b2Min = b2.getStatistics().getMinCount();
 
         List<Long> newDistinct = new LinkedList<>(b1Distinct);
+        List<Long> newMin = new LinkedList<>(b1Min);
+        List<Long> newMax = new LinkedList<>(b1Max);
 
         for (int i = 0; i < b1Distinct.size(); i++) {
-            long a = Math.max(b1Distinct.get(i), curDistinct.get(i));
-            newDistinct.set(i, a);
+            long distinct = Math.max(b1Distinct.get(i), b2Distinct.get(i));
+            long min	  = Math.min(b1Min.get(i), b2Min.get(i));
+            long max      = Math.max(b1Max.get(i), b2Max.get(i));
+            newDistinct.set(i, distinct);
+            newMin.set(i,min);
+            newMax.set(i, max);
         }
-
+        //b2->bi
         for (STHolesBucket<R> bi : I) {
 
-            curDistinct = bi.getStatistics().getDistinctCount();
+            b2Distinct = bi.getStatistics().getDistinctCount();
+            b2Max = bi.getStatistics().getMaxCount();
+            b2Min = bi.getStatistics().getMinCount();
             newFrequency += bi.getStatistics().getFrequency() ;
 
             for (int i = 0; i < newDistinct.size(); i++) {
 
-                newDistinct.set(i,  Math.max(newDistinct.get(i), curDistinct.get(i)));
+                newDistinct.set(i,  Math.max(newDistinct.get(i), b2Distinct.get(i)));
+                newMin.set(i,  Math.min(newMin.get(i), b2Min.get(i)));
+                newMax.set(i,  Math.max(newMax.get(i), b2Max.get(i)));
             }
         }
 
@@ -786,7 +857,7 @@ public class STHolesHistogram<R extends Rectangle<R>> extends STHistogramBase<R,
         }
 
         // Create bn
-        Stat newStatistics = new Stat(newFrequency, newDistinct);
+        Stat newStatistics = new Stat(newFrequency, newDistinct , newMin , newMax);
         STHolesBucket<R> bn = new STHolesBucket<R>(newBox, newStatistics, newChildren, null);
 
         double penalty;

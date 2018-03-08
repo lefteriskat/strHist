@@ -22,4 +22,10 @@ public class VOID {
     public static final URI PROPERTY = vf.createURI(VOID.NAMESPACE, "property");
     public static final URI URIREGEXPATTERN = vf.createURI(VOID.NAMESPACE, "uriRegexPattern");
     public static final URI RADIUS = vf.createURI(VOID.NAMESPACE, "radius");
+    public static final URI MAXOBJECTS = vf.createURI(VOID.NAMESPACE, "maxObjects");
+    public static final URI MAXSUBJECTS = vf.createURI(VOID.NAMESPACE, "maxSubjects");
+    public static final URI MAXPROPERTIES = vf.createURI(VOID.NAMESPACE, "maxProperties");
+    public static final URI MINOBJECTS = vf.createURI(VOID.NAMESPACE, "minObjects");
+    public static final URI MINSUBJECTS = vf.createURI(VOID.NAMESPACE, "minSubjects");
+    public static final URI MINPROPERTIES = vf.createURI(VOID.NAMESPACE, "minProperties");
 }

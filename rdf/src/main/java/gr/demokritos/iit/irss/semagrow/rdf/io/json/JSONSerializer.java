@@ -84,6 +84,12 @@ public class JSONSerializer {
         statistics.put("distinctSubjects", stats.getDistinctCount().get(0));
         statistics.put("distinctPredicates", stats.getDistinctCount().get(1));
         statistics.put("distinctObjects", stats.getDistinctCount().get(2));
+        statistics.put("minSubjects", stats.getMinCount().get(0));
+        statistics.put("minPredicates", stats.getMinCount().get(1));
+        statistics.put("minObjects", stats.getMinCount().get(2));
+        statistics.put("maxSubjects", stats.getMaxCount().get(0));
+        statistics.put("maxPredicates", stats.getMaxCount().get(1));
+        statistics.put("maxObjects", stats.getMaxCount().get(2));
 
         return statistics;
     }

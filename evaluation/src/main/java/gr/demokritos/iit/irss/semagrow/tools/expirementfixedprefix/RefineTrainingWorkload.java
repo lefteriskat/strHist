@@ -32,7 +32,7 @@ public class RefineTrainingWorkload {
         OptionParser parser = new OptionParser("o:v:l:");
         OptionSet options = parser.parse(args);
 
-        if (options.hasArgument("o")) {
+        if (options.hasArgument("o") && options.hasArgument("v") && options.hasArgument("l")) {
             outputPath = options.valueOf("o").toString();
             dbpediaVersion = options.valueOf("v").toString();
             logNum = Integer.parseInt(options.valueOf("l").toString());
@@ -67,7 +67,8 @@ public class RefineTrainingWorkload {
             histogram = Utils.loadPreviousHistogram(outputPath);
         else
             histogram = Utils.loadCurrentHistogram(outputPath);
-
+        
+        histogram.setMaxBucketsNum(100);
         logger.info("Refining histogram ");
         ((STHolesHistogram)histogram).refine(listQueryRecords);
         logger.info("Refinement is over.");

@@ -4,6 +4,7 @@ import gr.demokritos.iit.irss.semagrow.api.RectangleWithVolume;
 import gr.demokritos.iit.irss.semagrow.api.STHistogram;
 import gr.demokritos.iit.irss.semagrow.api.qfr.QueryRecord;
 import gr.demokritos.iit.irss.semagrow.api.qfr.QueryResult;
+import gr.demokritos.iit.irss.semagrow.base.Estimation;
 
 import java.util.*;
 
@@ -48,6 +49,20 @@ public class STHolesOrigHistogram<R extends RectangleWithVolume<R>> implements S
             return (long)Math.ceil(root.getEstimate(rec));
         else
             return 0;
+    }
+    
+    /**
+     * estimates the number of tuples
+     * that match rectangle {rec}
+     * @param rec rectangle
+     * @return number of tuples
+     */
+    public Estimation newEstimate(R rec) {
+
+        if (root != null)
+            return new Estimation((long)Math.ceil(root.getEstimate(rec)));
+        else
+            return new Estimation();
     }
 
 

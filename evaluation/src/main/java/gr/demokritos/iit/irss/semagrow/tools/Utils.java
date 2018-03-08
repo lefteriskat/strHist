@@ -7,6 +7,7 @@ import eu.semagrow.querylog.api.QueryLogHandler;
 import eu.semagrow.querylog.api.QueryLogParser;
 import eu.semagrow.querylog.api.QueryLogRecord;
 import gr.demokritos.iit.irss.semagrow.api.qfr.QueryRecord;
+import gr.demokritos.iit.irss.semagrow.base.Estimation;
 import gr.demokritos.iit.irss.semagrow.base.Stat;
 import gr.demokritos.iit.irss.semagrow.base.range.ExplicitSetRange;
 import gr.demokritos.iit.irss.semagrow.file.FileManager;
@@ -25,6 +26,7 @@ import gr.demokritos.iit.irss.semagrow.rdf.io.json.JSONSerializer;
 import gr.demokritos.iit.irss.semagrow.rdf.io.sevod.VoIDSerializer;
 import gr.demokritos.iit.irss.semagrow.sesame.ActualCardinalityEstimator;
 import gr.demokritos.iit.irss.semagrow.sesame.CardinalityEstimatorImpl;
+import gr.demokritos.iit.irss.semagrow.sesame.NewCardinalityEstimatorImpl;
 import gr.demokritos.iit.irss.semagrow.sesame.TestSail;
 import gr.demokritos.iit.irss.semagrow.stholes.STHolesBucket;
 import gr.demokritos.iit.irss.semagrow.stholes.STHolesHistogram;
@@ -125,18 +127,32 @@ public class Utils {
     }
 
     /**
+<<<<<<< HEAD
      * Fixed root for dbpedia version 3.2 (3.3)
+=======
+     * Fixed root for dbpedia dataset3.2 or 3.3
+>>>>>>> second_phase
      * @return
      */
     private static STHolesBucket getFixedRoot() {
         RDFRectangle box = new RDFRectangle(new RDFURIRange(), new ExplicitSetRange<URI>(), new RDFValueRange());
 
         List<Long> distinct = new ArrayList<>();
+        List<Long> max = new ArrayList<>();
+        List<Long> min = new ArrayList<>();
+        
         distinct.add((long)2359117);//3.3: 2653130
         distinct.add((long)1);
         distinct.add((long)339112);//3.3: 384029
-
-        Stat stats = new Stat((long) 7716548, distinct);//  3.3: 8972539
+        //SSELECT MIN(?count){SELECT COUNT(*) as ?count FROM <http://dbpedia3.2.org> WHERE {?s skos:subject ?category.} GROUP BY ?s}
+        min.add((long)1);//3.3: 1
+        min.add((long)1);
+        min.add((long)1);//3.3: 1
+        //SELECT MAX(?count){SELECT COUNT(*) as ?count FROM <http://dbpedia3.2.org> WHERE {?s skos:subject ?category.} GROUP BY ?s}
+        max.add((long)71);//3.3: 86
+        max.add((long)1);
+        max.add((long)287278);//3.3: 336494
+        Stat stats = new Stat((long) 7716548, distinct , min ,max);// 3.3: 8972539
 
         return new STHolesBucket(box, stats);
     }
@@ -323,6 +339,22 @@ public class Utils {
         }
 
         return 0;
+    }
+    
+    public static Estimation newEvaluateOnHistogram(RDFSTHolesHistogram histogram, String query) {
+        try {
+            logger.info("Cardinality estimation on Histogram for query: " + query);
+            ParsedTupleQuery q = QueryParserUtil.parseTupleQuery(QueryLanguage.SPARQL, query, "http://dbpedia.org");
+
+            Estimation card = new NewCardinalityEstimatorImpl(histogram).
+                    getCardinality(q.getTupleExpr(), EmptyBindingSet.getInstance());
+
+            return card;
+        } catch (MalformedQueryException e) {
+            e.printStackTrace();
+        }
+
+        return new Estimation();
     }
 
     public static long evaluateOnHistogram1(RDFSTHolesHistogram histogram, String query) {

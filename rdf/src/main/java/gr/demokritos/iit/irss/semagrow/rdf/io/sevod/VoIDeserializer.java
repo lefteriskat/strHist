@@ -196,11 +196,20 @@ public class VoIDeserializer {
         Long frequency = Long.parseLong(model.filter(res, VOID.TRIPLES, null).objectString());
 
         List<Long> distinctCount = new ArrayList<Long>();
+        List<Long> minCount = new ArrayList<Long>();
+        List<Long> maxCount = new ArrayList<Long>();
+        
         distinctCount.add(Long.parseLong(model.filter(res, VOID.DISTINCTSUBJECTS, null).objectString()));
         distinctCount.add(Long.parseLong(model.filter(res, VOID.PROPERTIES, null).objectString()));
         distinctCount.add(Long.parseLong(model.filter(res, VOID.DISTINCTOBJECTS, null).objectString()));
+        minCount.add(Long.parseLong(model.filter(res, VOID.MINSUBJECTS, null).objectString()));
+        minCount.add(Long.parseLong(model.filter(res, VOID.MINPROPERTIES, null).objectString()));
+        minCount.add(Long.parseLong(model.filter(res, VOID.MINOBJECTS, null).objectString()));
+        maxCount.add(Long.parseLong(model.filter(res, VOID.MAXSUBJECTS, null).objectString()));
+        maxCount.add(Long.parseLong(model.filter(res, VOID.MAXPROPERTIES, null).objectString()));
+        maxCount.add(Long.parseLong(model.filter(res, VOID.MAXOBJECTS, null).objectString()));
 
-        return new Stat(frequency, distinctCount);
+        return new Stat(frequency, distinctCount,minCount,maxCount);
     }
 
 

@@ -254,6 +254,8 @@ public class JSONCDeserializer {
         JSONObject jsonObject;
         Long frequency;
         List<Long> distinctCount = new ArrayList<Long>();
+        List<Long> minCount = new ArrayList<Long>();
+        List<Long> maxCount = new ArrayList<Long>();
 
         jsonObject = (JSONObject)statsObj;
 
@@ -262,7 +264,13 @@ public class JSONCDeserializer {
         distinctCount.add((Long)jsonObject.get("distinctSubjects"));
         distinctCount.add((Long)jsonObject.get("distinctPredicates"));
         distinctCount.add((Long)jsonObject.get("distinctObjects"));
+        minCount.add((Long)jsonObject.get("minSubjects"));
+        minCount.add((Long)jsonObject.get("minPredicates"));
+        minCount.add((Long)jsonObject.get("minObjects"));
+        maxCount.add((Long)jsonObject.get("maxSubjects"));
+        maxCount.add((Long)jsonObject.get("maxPredicates"));
+        maxCount.add((Long)jsonObject.get("maxObjects"));
 
-        return new Stat(frequency, distinctCount);
+        return new Stat(frequency, distinctCount, minCount, maxCount);
     }
 }
