@@ -50,9 +50,8 @@ public class Evaluate {
         OptionParser parser = new OptionParser("i:o:v:n:");
         OptionSet options = parser.parse(args);
 
-        if (options.hasArgument("i") && options.hasArgument("o") 
+        if (options.hasArgument("o") 
          && options.hasArgument("v") && options.hasArgument("n")) {
-            inputPath = options.valueOf("i").toString();
             outputPath = options.valueOf("o").toString();
             dbpediaVersion = options.valueOf("v").toString();
             numOfQueries = Integer.parseInt(options.valueOf("n").toString());
@@ -102,7 +101,7 @@ public class Evaluate {
             BufferedWriter bw = Files.newBufferedWriter(path, StandardCharsets.UTF_8, options);
             bw.write("Year, Prefix, Act, Est, AbsErr%\n\n");
 
-            RDFSTHolesHistogram histogram = loadHistogram(1);
+            RDFSTHolesHistogram histogram = loadHistogram(0);
             //RDFCircleSTHolesHistogram histogram = loadCircleHistogram(1);
 
             // Evaluate a point query on histogram and triple store.
@@ -181,9 +180,9 @@ public class Evaluate {
         String testQuery;
         QueryEvaluatorStructure actualEval=null, histEval=null;
 
-        List<String> categories = Utils.loadRandomCategories("/var/tmp/log.txt",numOfQueries);
+        List<String> categories = Utils.loadRandomCategories("/var/tmp/log2.txt",numOfQueries);
        
-        ActualQueryExecutor actual = new ActualQueryExecutor("histVOID.ttl");
+        ActualQueryExecutor actual = new ActualQueryExecutor("repository.ttl");
         actual.startConnection();
 
         ActualQueryExecutor hist = new ActualQueryExecutor("histVOID.ttl");
@@ -192,10 +191,11 @@ public class Evaluate {
 
         for(int i=0;i<numOfQueries;i++){
         	category = categories.get(i);
-            testQuery = PREFIXES + "SELECT * FROM <http://dbpedia" +dbpediaVersion+ ".org> WHERE {?s skos:subject "+category+".}";
+            testQuery = PREFIXES + "SELECT ?category FROM <http://dbpedia" +dbpediaVersion+ ".org> WHERE {<%s> skos:subject ?category .}";
+            String q = String.format(testQuery,category);
            // System.out.println("Run normally.... ");
             try {
-				actualEval = actual.runSemagrowTest(testQuery, metrics);
+				actualEval = actual.runSemagrowTest(q, metrics);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -204,14 +204,14 @@ public class Evaluate {
 
             //System.out.println("Run hist evaluation.... ");
             try {
-				histEval = hist.runSemagrowTest(testQuery, metrics);
+				histEval = hist.runSemagrowTest(q, metrics);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
             //System.out.println("\n -------------------------------------------------- \n");
 
-            evaluateTestQuery1((RDFSTHolesHistogram)histogram, testQuery, actualEval.getResultCount(), bw);
+            evaluateTestQuery1((RDFSTHolesHistogram)histogram, q, actualEval.getResultCount(), bw);
             //evaluateTestCircleQuery(histogram, testQuery, actualEval.getResultCount(), bw);
 
             metrics.setActual_execution_time(actualEval.getTime());
