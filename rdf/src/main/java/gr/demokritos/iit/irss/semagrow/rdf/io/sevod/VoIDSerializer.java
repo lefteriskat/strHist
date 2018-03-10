@@ -49,7 +49,7 @@ public class VoIDSerializer {
     private int level;
     private Model model;
 
-    public static String histogramNamespace = "http://www.semagrow.eu/metadata/histogram/",
+    public static String histogramNamespace = "http://dbpedia.org/sparql",
                    eleonUser = "http://eleon.iit.demokritos.gr/user#irss2014hist";
 
     private String outputPath;
@@ -79,7 +79,7 @@ public class VoIDSerializer {
         model.setNamespace(SEVOD.PREFIX, SEVOD.NAMESPACE);
         model.setNamespace(XMLSchema.PREFIX, XMLSchema.NAMESPACE);
         model.setNamespace(POWDERS.PREFIX, POWDERS.NAMESPACE);
-        model.setNamespace("agris", "http://agris.fao.org/aos/records/");
+        model.setNamespace("skos", "http://www.w3.org/2004/02/skos/core#");
         model.setNamespace("", histogramNamespace);
 
 
@@ -95,7 +95,7 @@ public class VoIDSerializer {
         model.add(bucketResource, RDF.TYPE, VOID.DATASET);
         model.add(bucketResource, DCTERMS.TITLE, createLiteral(bucketResource.toString()));
         model.add(bucketResource, VOID.SUBSET, createResource(1));
-        model.add(bucketResource, DCTERMS.CREATOR, createLiteral("nick"));
+        //model.add(bucketResource, DCTERMS.CREATOR, createLiteral("nick"));
         eleon(bucketResource);
 
         serializeBucket(histogram.getRoot(), createResource(++level), 0, true);
@@ -135,6 +135,7 @@ public class VoIDSerializer {
             bucketResource = createResource(bucketResource.toString(), num);
 
         model.add(bucketResource, RDF.TYPE, VOID.DATASET);
+        model.add(bucketResource, VOID.ENDPOINT, createURI("http://dbpedia.org/sparql"));
         model.add(bucketResource, VOID.TRIPLES, createLiteral(bucket.getStatistics().getFrequency()));
         model.add(bucketResource, VOID.DISTINCTSUBJECTS, createLiteral(bucket.getStatistics().getDistinctCount().get(0)));
         model.add(bucketResource, VOID.PROPERTIES, createLiteral(bucket.getStatistics().getDistinctCount().get(1)));

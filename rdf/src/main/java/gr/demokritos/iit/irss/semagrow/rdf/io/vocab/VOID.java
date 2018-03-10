@@ -14,6 +14,7 @@ public class VOID {
     public static final String NAMESPACE = "http://rdfs.org/ns/void#";
     public static final String PREFIX = "void";
     public static final URI DATASET = vf.createURI(VOID.NAMESPACE, "Dataset");
+    public static final URI ENDPOINT = vf.createURI(VOID.NAMESPACE, "sparqlEndpoint");
     public static final URI SUBSET = vf.createURI(VOID.NAMESPACE, "subset");
     public static final URI TRIPLES = vf.createURI(VOID.NAMESPACE, "triples");
     public static final URI DISTINCTOBJECTS = vf.createURI(VOID.NAMESPACE, "distinctObjects");

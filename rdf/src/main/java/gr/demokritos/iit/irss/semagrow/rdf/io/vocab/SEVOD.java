@@ -24,5 +24,5 @@ public class SEVOD {
 
     public static final URI FACET_PROPERTY = vf.createURI(SEVOD.NAMESPACE, "propertyFacet");
     public static final URI FACET = vf.createURI(SEVOD.NAMESPACE, "facet");
-    public static final URI ROOT = vf.createURI(SEVOD.NAMESPACE, "datasetTop");
+    public static final URI ROOT = vf.createURI(SEVOD.NAMESPACE, "DatasetRoot");
 }
