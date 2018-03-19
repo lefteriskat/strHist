@@ -42,7 +42,7 @@ import joptsimple.OptionSet;
 public class PrepareTrainingWorkload {
 
     static final Logger logger = LoggerFactory.getLogger(PrepareTrainingWorkload.class);
-    private static URI endpoint = ValueFactoryImpl.getInstance().createURI("http://dbpedia.org");
+    private static URI endpoint = ValueFactoryImpl.getInstance().createURI("http://dbpedia.org/sparql");
     private static String PREFIXES = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" + 
                                       "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" + 
                                       "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" + 
@@ -64,7 +64,7 @@ public class PrepareTrainingWorkload {
             dbpediaVersion = options.valueOf("v").toString();
             numOfQueries = Integer.parseInt(options.valueOf("b").toString());
             logNum = Integer.parseInt(options.valueOf("l").toString());
-            query = PREFIXES + "SELECT * FROM <http://dbpedia" +dbpediaVersion+ ".org> WHERE {?s skos:subject ?category. FILTER regex(str(?s), \"^%s\")}";
+            query = PREFIXES + "SELECT * FROM <http://dbpedia" +dbpediaVersion+ ".org> WHERE {?s skos:subject ?category. FILTER regex(str(?category), \"^%s\")}";
             
             executeExperiment();
         } else {
@@ -98,7 +98,7 @@ public class PrepareTrainingWorkload {
     }
 
     private static void queryStore(Repository repo) throws IOException, RepositoryException {
-        List<String> subjects = Utils.loadRandomCategories("/var/tmp/log2.txt",numOfQueries);
+        List<String> objects = Utils.loadRandomCategories("/var/tmp/log.txt",numOfQueries);
 
         logger.info("Starting querying triple store: ");
         RepositoryConnection conn;
@@ -106,7 +106,7 @@ public class PrepareTrainingWorkload {
         int trimPos = 2;
         String trimmedSubject;
 
-        for (int j=0; j<subjects.size(); j++) {
+        for (int j=0; j<objects.size(); j++) {
             logger.info("Query No: " + j);
             try {
                 conn = repo.getConnection();
@@ -116,7 +116,7 @@ public class PrepareTrainingWorkload {
                 // prefix depths.
                 if (j % 25 == 0) trimPos++;
 
-                trimmedSubject = Utils.trimSubject(subjects.get(j), trimPos);
+                trimmedSubject = Utils.trimObject(objects.get(j), trimPos);
                 String q = String.format(query, trimmedSubject);
                 TupleQuery tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, q);
                 logger.info("Query: " + q);

@@ -52,8 +52,11 @@ public class RDFValueRange implements RangeLength<Value>, Rangeable<RDFValueRang
     }
 
     public boolean isUnit() {
-        return (uriRange != null && literalRange == null && uriRange.isUnit())
-            || (uriRange == null && literalRange != null && literalRange.isUnit());
+        System.out.println("UriRange :"+uriRange+" "+uriRange.isUnit());
+        System.out.println("LiteralRange :-"+literalRange+"- "+literalRange.isUnit());
+        System.out.println((uriRange != null)+" "+(literalRange == null|| literalRange.isEmpty())+" "+uriRange.isUnit());
+        return (uriRange != null && (literalRange == null|| literalRange.isEmpty()) && uriRange.isUnit())
+            || ( (uriRange == null || uriRange.isEmpty() ) && literalRange != null  && literalRange.isUnit());
     }
 
     public boolean isEmpty() {

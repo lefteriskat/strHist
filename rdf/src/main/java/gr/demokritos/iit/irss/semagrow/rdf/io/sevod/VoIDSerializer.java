@@ -49,7 +49,7 @@ public class VoIDSerializer {
     private int level;
     private Model model;
 
-    public static String histogramNamespace = "http://dbpedia.org/sparql",
+    public static String histogramNamespace = "http://dbpedia.org/sparql/categories",
                    eleonUser = "http://eleon.iit.demokritos.gr/user#irss2014hist";
 
     private String outputPath;

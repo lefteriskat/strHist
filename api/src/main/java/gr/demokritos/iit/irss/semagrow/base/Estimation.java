@@ -8,7 +8,8 @@ public class Estimation {
 	private Long metric3;
 	private Long metric4;
 	private Long metric5;
-	
+
+	private final static Integer maximumTimesLarger = 0; //set to zero if no limit
 	
 	public Estimation(){
 		currentEstimation = (long) 0;
@@ -31,12 +32,22 @@ public class Estimation {
 	public Estimation(Long frequency,Long distinct,Long min,Long max){
 		System.out.println("Frequency = "+frequency+" dvc = "+distinct);
 		System.out.println("Min = "+min+" Max = "+max);
-		currentEstimation = (long) Math.round((float)frequency/(float) distinct);
-		metric1 = currentEstimation + (long) Math.round((float)currentEstimation*(float)0.3 );
-		metric2 = currentEstimation + (long) Math.round((float)max*(float)0.05 );
-		metric3 = currentEstimation + (long) Math.round((double)max*(Math.log((double)max/(double)currentEstimation)/(double)100) );
+		currentEstimation = Math.round(frequency/(double) distinct);
+		Long limit = currentEstimation*maximumTimesLarger;
+		System.out.println(max/(double)currentEstimation);
+		System.out.println("log10 = "+  Math.log10(max/(double)currentEstimation));
+		System.out.println("loge = "+ Math.log(max/(double)currentEstimation));
+
+		metric1 = currentEstimation + Math.round((double)max*0.05 );
+		metric1 = (limit > 0 && metric1 > limit)?limit:metric1;
+		metric2 = currentEstimation + Math.round((double)max*(Math.log((double)max/currentEstimation)/(double)100) );
+		metric2 = (limit > 0 && metric2 > limit)?limit:metric2;
+		metric3 = currentEstimation + Math.round((double)max*(Math.log10((double)max/currentEstimation)/(double)100) );
+		metric3 = (limit > 0 && metric3 > limit)?limit:metric3;
 		metric4 = currentEstimation + min;
-		metric5 = min + (long) Math.round((double)max*(double)0.1 );
+		metric4 = (limit > 0 && metric4 > limit)?limit:metric4;
+		metric5 = min +  Math.round((double)max*(double)0.1 );
+		metric5 = (limit > 0 && metric5 > limit)?limit:metric5;
 	}
 	
 	

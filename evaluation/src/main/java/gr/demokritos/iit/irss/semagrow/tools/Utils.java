@@ -127,11 +127,7 @@ public class Utils {
     }
 
     /**
-<<<<<<< HEAD
-     * Fixed root for dbpedia version 3.2 (3.3)
-=======
      * Fixed root for dbpedia dataset3.2 or 3.3
->>>>>>> second_phase
      * @return
      */
     private static STHolesBucket getFixedRoot() {
@@ -309,6 +305,28 @@ public class Utils {
         	trimmedSubject += lastSlashPrefix.substring(0, trimPos);
         else
         	trimmedSubject += lastSlashPrefix.substring(0, lastSlashPrefix.length());
+
+        return trimmedSubject;
+    }
+
+    public static String trimObject(String subject, int trimPos) {
+        String[] splits = subject.split(":");
+        String lastSlashPrefix = splits[splits.length - 1];
+
+        // Get random cut on the prefix. 3 is given to avoid memory heap overflow
+//        int randomCut = randInt(2, lastSlashPrefix.length() - 3);
+
+        String trimmedSubject = "";
+        // Reform the trimmed subject. Intentionally exclude the last one.
+        for (int i=0; i<splits.length - 1; i++) {
+            trimmedSubject += splits[i] + ":";
+        }
+
+        // Append the random cut.
+        if(trimPos <= lastSlashPrefix.length())
+            trimmedSubject += lastSlashPrefix.substring(0, trimPos);
+        else
+            trimmedSubject += lastSlashPrefix.substring(0, lastSlashPrefix.length());
 
         return trimmedSubject;
     }
@@ -508,11 +526,11 @@ public class Utils {
         ArrayList<String> list = new ArrayList<String>();
         Integer base;
         if(queryLogSize<=85) {
-        	base = 27100;
-        }else if(queryLogSize<=850) {
         	base = 2710;
-        }else {
+        }else if(queryLogSize<=850) {
         	base = 271;
+        }else {
+        	base = 27;
         }
         Random rand = new Random(); 
         try {

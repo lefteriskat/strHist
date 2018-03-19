@@ -58,7 +58,7 @@ public class EvaluateOnVirtuoso {
             dbpediaVersion = options.valueOf("v").toString();
             numOfQueries = Integer.parseInt(options.valueOf("n").toString());
 
-            query = PREFIXES + "SELECT ?category FROM <http://dbpedia" +dbpediaVersion+ ".org> WHERE {<%s> skos:subject ?category .}";
+            query = PREFIXES + "SELECT ?s FROM <http://dbpedia" +dbpediaVersion+ ".org> WHERE { ?s skos:subject <%s> .}";
             
             executeExperiment();
         } else {
@@ -83,24 +83,25 @@ public class EvaluateOnVirtuoso {
 
     private static void evaluate(Repository repo,RDFSTHolesHistogram histogram) throws IOException, RepositoryException {
 
-        List<String> subjects = Utils.loadStandardCategories("/var/tmp/log2.txt",numOfQueries);
+        List<String> objects = Utils.loadStandardCategories("/var/tmp/log.txt",numOfQueries);
         Long actual;
         Estimation estimation;
         logger.info("Starting evaluating triple store: ");
+        logger.info("NumOfQueries = "+numOfQueries+" objectsSize = "+objects.size());
         RepositoryConnection conn;
 
         FileWriter fileWriter = new FileWriter("/var/tmp/strHist/results"+dbpediaVersion+".txt");
         PrintWriter printWriter = new PrintWriter(fileWriter);
         printWriter.println("BucketsNum = "+histogram.getBucketsNum());
         printWriter.println("Actual\tCurrent\tK1\tK2\tK3\tK4\tK5");
-        for (int j=0; j<subjects.size(); j++) {
+        for (int j=0; j<objects.size(); j++) {
             logger.info("Query No: " + j);
             
             try {
                 conn = repo.getConnection();
 
           
-                String q = String.format(query, subjects.get(j));
+                String q = String.format(query, objects.get(j));
 
                 estimation = Utils.newEvaluateOnHistogram(histogram, q);
                 actual = Utils.evaluateOnTripleStore(conn, q);

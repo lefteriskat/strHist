@@ -232,7 +232,9 @@ public class STHolesBucket<R extends Rectangle> {
         if (rec == null) { rec = this.box; }
 
         for (int i=0; i< rec.getDimensionality(); i++) {
+
             if ((rec.getRange(i)).isUnit()) {
+                System.out.println("Range "+i+" :"+rec.getRange(i)+" "+rec.getRange(i).getClass());
             	dvc *= this.statistics.getDistinctCount().get(i);
             	min *= this.statistics.getMinCount().get(i);
             	max *= this.statistics.getMaxCount().get(i);
